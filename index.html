@@ -147,23 +147,23 @@
         </div>
     </div>
 
+    <!-- 미니 플레이어 -->
     <div id="mini-player" class="fixed bottom-6 z-50 w-full max-w-sm px-4 left-1/2 -translate-x-1/2">
         <div class="bg-[#FFF8E7] rounded-xl border-2 border-[#5D4037] p-3 shadow-2xl flex items-center justify-between">
             <div class="flex items-center gap-3 overflow-hidden text-left">
                 <div id="player-icon-container" class="w-10 h-10 rounded-full bg-[#333] border-2 border-[#5D4037] flex items-center justify-center text-white shrink-0 relative overflow-hidden">
-                    <div class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent"></div>
                     <div class="w-3 h-3 bg-[#FFF8E7] rounded-full border border-[#5D4037] z-10"></div>
                     <i data-lucide="disc-3" class="w-6 h-6 absolute opacity-20"></i>
                 </div>
                 <div class="flex flex-col overflow-hidden font-jua">
-                    <span id="player-song" class="text-sm font-bold text-[#5D4037] truncate">준비 중...</span>
+                    <span id="player-song" class="text-sm font-bold text-[#5D4037] truncate">대기 중...</span>
                     <span class="text-[11px] text-[#8D6E63] truncate flex items-center gap-1">
                         <span class="w-1.5 h-1.5 bg-[#84CC16] rounded-full animate-pulse"></span>
                         행복 재생 중 (❁´◡`❁)
                     </span>
                 </div>
             </div>
-            <div class="bg-[#5D4037] text-white px-2 py-0.5 text-[8px] font-pixel rounded animate-pulse shadow-sm">ON_AIR</div>
+            <div id="air-tag" class="bg-[#5D4037] text-white px-2 py-0.5 text-[8px] font-pixel rounded animate-pulse shadow-sm">ON_AIR</div>
         </div>
     </div>
 
@@ -2337,9 +2337,12 @@
             isPlaying = true;
             playerSongText.innerText = randomLyric.song;
 
-            // 로딩 연출을 위해 약간의 지연
+           // 로딩 연출
             setTimeout(() => {
                 embedVideo(videoId);
+                
+                // 영상이 삽입된 후에 재생 상태로 변경
+                isPlaying = true;
                 updateControls(true);
                 
                 loadingState.classList.add('hidden');
@@ -2347,11 +2350,11 @@
 
                 resultText.innerText = `"${randomLyric.text}"`;
                 resultSpeakerLabel.innerText = `${randomLyric.artist} | ${randomLyric.album}`;
-                resultGif.src = `${randomGifNum}.gif`;
+                resultGif.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${randomGifNum}.gif`;
 
                 isAnimating = false;
                 lucide.createIcons();
-            }, 1500);
+            }, 1000);
         }
 
         function togglePlay() {
@@ -2384,13 +2387,14 @@ function updateControls(playing) {
         drawBtn.addEventListener('click', drawFortune);
         playPauseBtn.addEventListener('click', togglePlay);
         
-        // 페이지 진입 시 자동 실행 (브라우저 정책 대응: 사용자가 어디든 클릭하면 바로 실행)
+        // 페이지 진입 시 자동 실행 시도
+        drawFortune();
+
+        // 브라우저 차단 대비: 사용자가 어디든 클릭하면 (아직 재생 중이 아닐 때만) 다시 시도
         window.addEventListener('click', () => {
             if(!currentVideoId && !isAnimating) drawFortune();
         }, { once: true });
-
-        // 초기 실행 시도
-        drawFortune();
+    });
     });
 // 휴대폰 기울기 감지 및 배경 이동
 window.addEventListener('deviceorientation', function(event) {
@@ -2410,5 +2414,6 @@ window.addEventListener('deviceorientation', function(event) {
     </script>
 </body>
 </html>
+
 
 
