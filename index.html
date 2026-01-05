@@ -2346,7 +2346,7 @@
 
                 resultText.innerText = `"${randomLyric.text}"`;
                 resultSpeakerLabel.innerText = `${randomLyric.artist} | ${randomLyric.album}`;
-                resultGif.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${randomGifNum}.gif`;
+                resultGif.src = `${randomGifNum}.gif`;
 
                 isAnimating = false;
                 lucide.createIcons();
@@ -2388,3 +2388,4 @@
     </script>
 </body>
 </html>
+
