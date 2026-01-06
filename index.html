@@ -10,8 +10,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
-
-        body { font-family: 'Jua', 'Noto Sans KR', sans-serif; background-color: #1a1a2e; overflow-x: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; }\
+        body { font-family: 'Jua', 'Noto Sans KR', sans-serif; background-color: #1a1a2e; overflow-x: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .font-pixel { font-family: 'Silkscreen', cursive; }
         .font-gamja { font-family: 'Gamja Flower', cursive; }
         .font-jua { font-family: 'Jua', sans-serif; }
@@ -27,44 +26,13 @@
         .chat-name-tag { position: absolute; top: -15px; left: 10px; background-color: #fff; border: 2px solid #000; padding: 2px 10px; color: #000; font-size: 11px; font-weight: bold; z-index: 20; }
         .action-button { background: linear-gradient(145deg, #D32F2F, #B71C1C); border-bottom: 6px solid #7f0000; transition: all 0.1s ease; }
         .action-button:active { transform: translate(2px, 4px); border-bottom-width: 2px; }
-/* 기존 .action-button 설정 아래에 추가하세요 */
-.action-button { background: linear-gradient(145deg, #D32F2F, #B71C1C); border-bottom: 6px solid #7f0000; transition: all 0.1s ease; }
-.action-button:active { transform: translate(2px, 4px); border-bottom-width: 2px; }
 
-/* ⬇️ 아이콘 모양을 위한 CSS 추가 ⬇️ */
-#play-pause-shape {
-    transition: all 0.2s ease-in-out;
-    box-sizing: border-box;
-}
+        /* 아이콘 모양 */
+        #play-pause-shape { transition: all 0.2s ease-in-out; box-sizing: border-box; }
+        .play-mode { width: 0; height: 0; border-style: solid; border-width: 12px 0 12px 20px; border-color: transparent transparent transparent #ffffff; margin-left: 5px; }
+        .pause-mode { width: 16px; height: 20px; border-style: double; border-width: 0 0 0 16px; border-color: #ffffff; }
 
-/* 재생(세모) 상태 */
-.play-mode {
-    width: 0; height: 0;
-    border-style: solid;
-    border-width: 12px 0 12px 20px;
-    border-color: transparent transparent transparent #ffffff;
-    margin-left: 5px; /* 세모의 시각적 중앙을 맞춤 */
-}
-
-/* 일시정지(두 줄) 상태 */
-.pause-mode {
-    width: 16px; height: 20px;
-    border-style: double;
-    border-width: 0 0 0 16px; /* 더블 보더로 두 줄 표현 */
-    border-color: #ffffff;
-}
-
-.bg-animate { 
-    position: fixed; 
-    top: 0; 
-    left: 0; 
-    width: 100%; 
-    height: 100%; 
-    z-index: -1; 
-    /* 기존 그라데이션 위에 이미지를 추가로 겹칩니다 */
-    background: 
-        url('https://i.postimg.cc/3w7TSPqc/image.png') no-repeat center top / 40%, 
-        linear-gradient(180deg, #0f0c29 0%, #302b63 50%, #24243e 100%); }
+        .bg-animate { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: url('https://i.postimg.cc/3w7TSPqc/image.png') no-repeat center top / 500px, linear-gradient(180deg, #0f0c29 0%, #302b63 50%, #24243e 100%); }
         .star { position: absolute; background-color: #fff; animation: twinkle var(--duration) ease-in-out infinite; opacity: 0.3; }
         @keyframes twinkle { 0%, 100% { opacity: 0.2; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.2); } }
         .cursor-blink { display: inline-block; width: 8px; height: 16px; background-color: #fff; margin-left: 4px; animation: blink 1s step-end infinite; vertical-align: middle; }
@@ -74,31 +42,35 @@
         .animate-cd { animation: rotate 3s linear infinite; }
         @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-
+        /* 초기 대기 화면 이미지 */
+        .idle-screen { background: url('https://i.postimg.cc/q7rwYHdJ/image.png') no-repeat center center / cover; position: absolute; inset: 0; z-index: 5; }
+        .start-btn { background: #fff; color: #5D4037; padding: 8px 24px; border-radius: 20px; font-weight: bold; font-size: 1.2rem; border: 3px solid #5D4037; box-shadow: 0 4px 0 #5D4037; transition: all 0.1s; }
+        .start-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #5D4037; }
     </style>
 </head>
 <body class="min-h-screen p-4 relative overflow-y-auto">
 
     <div class="bg-animate" id="star-layer"></div>
 
- <div class="relative z-10 w-full max-w-md p-6 flex flex-col my-4 rounded-[45px] console-body mx-auto">
-   <div class="game-screen w-full aspect-video mb-6 relative overflow-hidden screen-glass">
-    <div class="scanlines"></div>
-    
-    <div id="header-video-container" class="absolute inset-0 w-full h-full bg-black z-0 opacity-80"></div>
+    <div class="relative z-10 w-full max-w-md p-6 flex flex-col my-4 rounded-[45px] console-body mx-auto">
+        <div class="game-screen w-full aspect-video mb-6 relative overflow-hidden screen-glass">
+            <div class="scanlines"></div>
+            
+            <div id="header-video-container" class="absolute inset-0 w-full h-full bg-black z-0 opacity-80"></div>
 
-    <div class="absolute inset-0 flex flex-col items-center justify-start pt-6 z-20 pointer-events-none">
-        <h1 class="text-2xl font-pixel text-white text-outline tracking-tighter drop-shadow-lg transform -rotate-1">
-            Every Random DAY6
-        </h1>
-        <div class="bg-[#5D4037] px-2 py-0.5 rounded shadow-md mt-1 border border-white/10">
-            <p class="text-[9px] font-bold text-white font-jua">
-                랜덤 식스
-            </p>
+            <div id="start-overlay" class="idle-screen flex items-center justify-center z-30">
+                <button id="main-start-btn" class="start-btn font-jua animate-bounce">START</button>
+            </div>
+
+            <div class="absolute inset-0 flex flex-col items-center justify-start pt-6 z-20 pointer-events-none">
+                <h1 class="text-2xl font-pixel text-white text-outline tracking-tighter drop-shadow-lg transform -rotate-1">
+                    Every Random DAY6
+                </h1>
+                <div class="bg-[#5D4037] px-2 py-0.5 rounded shadow-md mt-1 border border-white/10">
+                    <p class="text-[9px] font-bold text-white font-jua">랜덤 식스</p>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
-
 
         <div id="interaction-area" class="flex flex-col items-center justify-center min-h-[160px] mb-6 relative px-1">
             <div id="loading-state" class="hidden text-center text-white font-jua py-6">
@@ -107,11 +79,11 @@
                 <p class="text-[10px] opacity-70 animate-pulse">잠시 후 음악이 재생됩니다</p>
             </div>
 
-            <div id="result-state" class="w-full flex flex-col items-center animate-fade-in-up">
+            <div id="result-state" class="w-full flex flex-col items-center">
                 <div class="game-chat-box w-full">
                     <div class="chat-name-tag font-jua" id="result-speaker-label">DAY6</div>
                     <div class="text-white text-xl leading-relaxed break-keep font-gamja" id="result-text-container">
-                        <span id="result-text">버튼을 눌러보세요</span>
+                        <span id="result-text">START 버튼을 눌러주세요!</span>
                         <span class="cursor-blink"></span>
                     </div>
                     <div class="absolute bottom-2 right-3">
@@ -125,16 +97,16 @@
             <div class="flex flex-col items-center justify-center">
                 <div class="sub-screen screen-glass">
                     <div class="scanlines"></div>
-                    <img id="result-gif" src="" alt="" class="w-full h-full object-cover pixelated animate-fade-in-up">
+                    <img id="result-gif" src="" alt="" class="w-full h-full object-cover pixelated">
                 </div>
                 <span class="text-[8px] font-pixel mt-2 text-[#5D4037] font-bold">Random_Denimalz</span>
             </div>
 
             <div class="flex items-center justify-end gap-6 transform rotate-[-5deg] pr-2">
-                 <div class="flex flex-col items-center">
-<button id="play-pause-btn" class="w-14 h-14 rounded-full action-button flex items-center justify-center text-white">
-    <div id="play-pause-shape" class="play-mode"></div>
-</button>
+                <div class="flex flex-col items-center">
+                    <button id="play-pause-btn" class="w-14 h-14 rounded-full action-button flex items-center justify-center text-white">
+                        <div id="play-pause-shape" class="play-mode"></div>
+                    </button>
                     <span class="text-[10px] font-pixel mt-2 text-[#5D4037] font-bold">PLAY</span>
                 </div>
                 <div class="flex flex-col items-center -mt-8">
@@ -156,10 +128,10 @@
                     <i data-lucide="disc-3" class="w-6 h-6 absolute opacity-20"></i>
                 </div>
                 <div class="flex flex-col overflow-hidden font-jua">
-                    <span id="player-song" class="text-sm font-bold text-[#5D4037] truncate">준비 중...</span>
+                    <span id="player-song" class="text-sm font-bold text-[#5D4037] truncate">기다리는 중...</span>
                     <span class="text-[11px] text-[#8D6E63] truncate flex items-center gap-1">
                         <span class="w-1.5 h-1.5 bg-[#84CC16] rounded-full animate-pulse"></span>
-                        행복 재생 중 (❁´◡`❁)
+                        오늘의 랜덤 데이식스 (❁´◡`알)
                     </span>
                 </div>
             </div>
@@ -168,24 +140,8 @@
     </div>
 
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        lucide.createIcons();
-
-        // --- 별 배경 ---
-        const starLayer = document.getElementById('star-layer');
-        for (let i = 0; i < 40; i++) {
-            const star = document.createElement('div');
-            star.className = 'star';
-            const size = Math.random() * 4 + 2;
-            star.style.width = size + 'px'; star.style.height = size + 'px';
-            star.style.left = Math.random() * 100 + 'vw'; star.style.top = Math.random() * 100 + 'vh';
-            star.style.setProperty('--duration', (Math.random() * 3 + 2) + 's');
-            starLayer.appendChild(star);
-        }
-
-        // --- 데이터 (1개 예시) ---
-        const songUrlMap = {
-   "한 페이지가 될 수 있게": "https://youtu.be/iQBOu81LkT0?si=hhD46vLrVNGHlhHj",
+    // [가사 데이터 및 URL Map은 기존과 동일하므로 생략 - 실제 파일에는 그대로 유지하세요]
+    const songUrlMap = {           "한 페이지가 될 수 있게": "https://youtu.be/iQBOu81LkT0?si=hhD46vLrVNGHlhHj",
             "Best Part": "https://youtu.be/a-UfQfufkgU?si=w9aejI5CRqKggjYb",
             "행운을 빌어 줘": "https://youtu.be/hrXCP0xeoA8?si=OyYOG2earR7aeDBh",
             "문득": "https://youtu.be/8xg7h1OTrsc?si=Eefh_Ojf3NZ4aK4Y",
@@ -299,10 +255,8 @@
 "Not Mine": "https://youtu.be/OvQslUZacec",
 "Say Wow": "https://youtu.be/8meVwcHtoQk?list=RD8meVwcHtoQk",
 "Sweet Chaos": "https://youtu.be/hoKz_O4OmCA?list=RDhoKz_O4OmCA",
-"Tick Tock": "https://youtu.be/L6obEteHeLM?list=RDL6obEteHeLM",
-        };
-        const lyricsData = [
-
+"Tick Tock": "https://youtu.be/L6obEteHeLM?list=RDL6obEteHeLM",};
+    const lyricsData = [ 
   {
     "text": "낮이 밝아도 아무 문제없어 커튼은 언제라도 칠 수 있으니까 걱정 마",
     "song": "365247",
@@ -2288,17 +2242,31 @@
     "song": "Zombie",
     "artist": "DAY6",
     "album": "The Book of Us : The Demon"
-  }
+  } ];
 
-        ];
+    document.addEventListener('DOMContentLoaded', function() {
+        lucide.createIcons();
+
+        // 별 배경 생성
+        const starLayer = document.getElementById('star-layer');
+        for (let i = 0; i < 40; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            const size = Math.random() * 4 + 2;
+            star.style.width = size + 'px'; star.style.height = size + 'px';
+            star.style.left = Math.random() * 100 + 'vw'; star.style.top = Math.random() * 100 + 'vh';
+            star.style.setProperty('--duration', (Math.random() * 3 + 2) + 's');
+            starLayer.appendChild(star);
+        }
 
         let isAnimating = false;
         let isPlaying = false;
         let currentVideoId = null;
 
+        const mainStartBtn = document.getElementById('main-start-btn');
+        const startOverlay = document.getElementById('start-overlay');
         const drawBtn = document.getElementById('draw-btn');
         const playPauseBtn = document.getElementById('play-pause-btn');
-        const playPauseIcon = document.getElementById('play-pause-icon');
         const loadingState = document.getElementById('loading-state');
         const resultState = document.getElementById('result-state');
         const resultGif = document.getElementById('result-gif');
@@ -2317,6 +2285,7 @@
         function embedVideo(videoId) {
             headerVideoContainer.innerHTML = '';
             const iframe = document.createElement('iframe');
+            // autoplay=1과 mute=0을 통해 소리가 나오도록 설정 (사용자 클릭 후이므로 가능)
             iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&loop=1&playlist=${videoId}&controls=0&enablejsapi=1&origin=${window.location.origin}`;
             iframe.allow = "autoplay; encrypted-media";
             headerVideoContainer.appendChild(iframe);
@@ -2326,18 +2295,20 @@
             if (isAnimating) return;
             isAnimating = true;
 
+            // 시작 오버레이 제거
+            startOverlay.style.display = 'none';
+            
             resultState.classList.add('hidden');
             loadingState.classList.remove('hidden');
             
             const randomLyric = lyricsData[Math.floor(Math.random() * lyricsData.length)];
             const randomGifNum = Math.floor(Math.random() * 40) + 1;
-            const videoId = getYouTubeId(songUrlMap[randomLyric.song]);
+            const videoId = getYouTubeId(songUrlMap[randomLyric.song] || "https://youtu.be/iQBOu81LkT0");
             
             currentVideoId = videoId;
             isPlaying = true;
             playerSongText.innerText = randomLyric.song;
 
-            // 로딩 연출을 위해 약간의 지연
             setTimeout(() => {
                 embedVideo(videoId);
                 updateControls(true);
@@ -2351,7 +2322,7 @@
 
                 isAnimating = false;
                 lucide.createIcons();
-            }, 1500);
+            }, 1000);
         }
 
         function togglePlay() {
@@ -2362,52 +2333,34 @@
             else headerVideoContainer.innerHTML = '<div class="w-full h-full flex items-center justify-center text-white font-pixel text-xs bg-[#111]">PAUSED</div>';
         }
 
-function updateControls(playing) {
-    const shape = document.getElementById('play-pause-shape');
-    
-    if (playing) {
-        // 재생 중일 때는 '일시정지' 모양으로
-        shape.classList.remove('play-mode');
-        shape.classList.add('pause-mode');
-        playerIcon.classList.add('animate-cd');
-    } else {
-        // 정지 중일 때는 '재생' 모양으로
-        shape.classList.remove('pause-mode');
-        shape.classList.add('play-mode');
-        playerIcon.classList.remove('animate-cd');
-    }
-    
-    // 루사이드 아이콘 업데이트는 다른 아이콘들을 위해 유지
-    lucide.createIcons();
-}
+        function updateControls(playing) {
+            const shape = document.getElementById('play-pause-shape');
+            if (playing) {
+                shape.classList.remove('play-mode');
+                shape.classList.add('pause-mode');
+                playerIcon.classList.add('animate-cd');
+            } else {
+                shape.classList.remove('pause-mode');
+                shape.classList.add('play-mode');
+                playerIcon.classList.remove('animate-cd');
+            }
+        }
 
+        // START 버튼 클릭 시 시작
+        mainStartBtn.addEventListener('click', drawFortune);
         drawBtn.addEventListener('click', drawFortune);
         playPauseBtn.addEventListener('click', togglePlay);
-        
-        // 페이지 진입 시 자동 실행 (브라우저 정책 대응: 사용자가 어디든 클릭하면 바로 실행)
-        window.addEventListener('click', () => {
-            if(!currentVideoId && !isAnimating) drawFortune();
-        }, { once: true });
-
-        // 초기 실행 시도
-        drawFortune();
     });
-// 휴대폰 기울기 감지 및 배경 이동
-window.addEventListener('deviceorientation', function(event) {
-    const bg = document.querySelector('.bg-animate');
-    
-    // 기울기 값 (beta: 앞뒤, gamma: 좌우)
-    const x = event.gamma; // -90 ~ 90
-    const y = event.beta;  // -180 ~ 180
 
-    // 이미지가 너무 많이 움직이지 않도록 보정 (0.5는 감도입니다)
-    const moveX = x * 0.5;
-    const moveY = (y - 45) * 0.5; // 보통 45도 정도로 들고 보므로 45를 뺌
-
-    // 배경 이미지의 위치만 미세하게 조정 (상단 중앙 50px 기준)
-    bg.style.backgroundPosition = `calc(50% + ${moveX}px) calc(0% + ${50 + moveY}px), center`;
-});
+    // 기울기 감지 (배경 이동)
+    window.addEventListener('deviceorientation', function(event) {
+        const bg = document.querySelector('.bg-animate');
+        const x = event.gamma; 
+        const y = event.beta;  
+        const moveX = x * 0.5;
+        const moveY = (y - 45) * 0.5;
+        bg.style.backgroundPosition = `calc(50% + ${moveX}px) calc(0% + ${50 + moveY}px), center`;
+    });
     </script>
 </body>
-
 </html>
