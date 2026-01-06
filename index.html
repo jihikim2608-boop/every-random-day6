@@ -245,7 +245,7 @@
 
         // GIF 랜덤 선택 및 로딩 핸들러
         const randomGifNum = Math.floor(Math.random() * 40) + 1;
-        resultGif.src = ` `<img src="${gifNum}.gif"`;
+        resultGif.src = `${gifNum}.gif`;
         
         resultGif.onload = () => {
             gifLoader.classList.add('hidden');
