@@ -3,48 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
     <title>에랜식: 에브리 랜덤 데이식스</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Silkscreen&family=Jua&family=Gamja+Flower&family=Nanum+Gothic+Coding&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://www.youtube.com/iframe_api"></script>
     
     <style>
-        body { 
-            font-family: 'Jua', 'Noto Sans KR', sans-serif; 
-            background-color: #1a1a2e; 
-            overflow-x: hidden; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-        }
+
+        body { font-family: 'Jua', 'Noto Sans KR', sans-serif; background-color: #1a1a2e; overflow-x: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; }\
         .font-pixel { font-family: 'Silkscreen', cursive; }
         .font-gamja { font-family: 'Gamja Flower', cursive; }
         .font-jua { font-family: 'Jua', sans-serif; }
         .text-outline { -webkit-text-stroke: 1.5px #5D4037; text-shadow: 2px 2px 0px rgba(255,255,255,0.3); paint-order: stroke fill; }
         .pixelated { image-rendering: pixelated; }
-        .console-body { background: linear-gradient(145deg, #FFD54F, #F57F17); border: 6px solid #5D4037; box-shadow: 15px 15px 0px rgba(0, 0, 0, 0.4), inset 4px 4px 0px rgba(255, 255, 255, 0.4); }
+        .console-body { background: linear-gradient(145deg, #FFD54F, #F57F17); border: 6px solid #5D4037; box-shadow: 25px 25px 0px rgba(0, 0, 0, 0.4), inset 4px 4px 0px rgba(255, 255, 255, 0.4); }
         .game-screen { background-color: #000; border: 6px solid #4E342E; position: relative; overflow: hidden; border-radius: 12px 12px 30px 12px; }
         .screen-glass::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 60%); pointer-events: none; z-index: 15; }
         .sub-screen { background-color: #000; border: 4px solid #5D4037; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; border-radius: 8px; overflow: hidden; position: relative; }
         .scanlines { background: linear-gradient(to bottom, rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 50%); background-size: 100% 4px; position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: 10; }
-        
-        #header-video-container { width: 100%; height: 100%; }
-        
-        .game-chat-box { background: linear-gradient(180deg, rgba(40, 40, 40, 0.95) 0%, rgba(10, 10, 10, 0.95) 100%); border: 3px solid #fff; outline: 3px solid #000; position: relative; padding: 22px 15px 15px 15px; box-shadow: 0 8px 0 rgba(0,0,0,0.5); min-height: 120px; display: flex; align-items: center; justify-content: center; text-align: center; }
+        #header-video-container iframe { position: absolute; top: 50%; left: 50%; width: 300%; height: 300%; transform: translate(-50%, -50%); object-fit: cover; pointer-events: none; }
+        .game-chat-box { background: linear-gradient(180deg, rgba(40, 40, 40, 0.95) 0%, rgba(10, 10, 10, 0.95) 100%); border: 3px solid #fff; outline: 3px solid #000; position: relative; padding: 22px 15px 15px 15px; box-shadow: 0 8px 0 rgba(0,0,0,0.5); min-height: 120px; }
         .chat-name-tag { position: absolute; top: -15px; left: 10px; background-color: #fff; border: 2px solid #000; padding: 2px 10px; color: #000; font-size: 11px; font-weight: bold; z-index: 20; }
-        .action-button { background: linear-gradient(145deg, #D32F2F, #B71C1C); border-bottom: 6px solid #7f0000; transition: all 0.1s ease; cursor: pointer; }
+        .action-button { background: linear-gradient(145deg, #D32F2F, #B71C1C); border-bottom: 6px solid #7f0000; transition: all 0.1s ease; }
         .action-button:active { transform: translate(2px, 4px); border-bottom-width: 2px; }
+/* 기존 .action-button 설정 아래에 추가하세요 */
+.action-button { background: linear-gradient(145deg, #D32F2F, #B71C1C); border-bottom: 6px solid #7f0000; transition: all 0.1s ease; }
+.action-button:active { transform: translate(2px, 4px); border-bottom-width: 2px; }
 
-        #play-pause-shape { transition: all 0.2s ease-in-out; box-sizing: border-box; }
-        .play-mode { width: 0; height: 0; border-style: solid; border-width: 12px 0 12px 20px; border-color: transparent transparent transparent #ffffff; margin-left: 5px; }
-        .pause-mode { width: 16px; height: 20px; border-style: double; border-width: 0 0 0 16px; border-color: #ffffff; }
+/* ⬇️ 아이콘 모양을 위한 CSS 추가 ⬇️ */
+#play-pause-shape {
+    transition: all 0.2s ease-in-out;
+    box-sizing: border-box;
+}
 
-        .bg-animate { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: linear-gradient(180deg, #0f0c29 0%, #302b63 50%, #24243e 100%); }
-        .star { position: absolute; background-color: #fff; animation: twinkle var(--duration) ease-in-out infinite; opacity: 0.3; border-radius: 50%; }
+/* 재생(세모) 상태 */
+.play-mode {
+    width: 0; height: 0;
+    border-style: solid;
+    border-width: 12px 0 12px 20px;
+    border-color: transparent transparent transparent #ffffff;
+    margin-left: 5px; /* 세모의 시각적 중앙을 맞춤 */
+}
+
+/* 일시정지(두 줄) 상태 */
+.pause-mode {
+    width: 16px; height: 20px;
+    border-style: double;
+    border-width: 0 0 0 16px; /* 더블 보더로 두 줄 표현 */
+    border-color: #ffffff;
+}
+
+.bg-animate { 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    z-index: -1; 
+    /* 기존 그라데이션 위에 이미지를 추가로 겹칩니다 */
+    background: 
+        url('https://i.postimg.cc/3w7TSPqc/image.png') no-repeat center top / 500px, 
+        linear-gradient(180deg, #0f0c29 0%, #302b63 50%, #24243e 100%); }
+        .star { position: absolute; background-color: #fff; animation: twinkle var(--duration) ease-in-out infinite; opacity: 0.3; }
         @keyframes twinkle { 0%, 100% { opacity: 0.2; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.2); } }
         .cursor-blink { display: inline-block; width: 8px; height: 16px; background-color: #fff; margin-left: 4px; animation: blink 1s step-end infinite; vertical-align: middle; }
         @keyframes blink { 50% { opacity: 0; } }
@@ -52,42 +73,45 @@
         .animate-fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
         .animate-cd { animation: rotate 3s linear infinite; }
         @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+
     </style>
 </head>
-<body class="p-4 relative">
+<body class="min-h-screen p-4 relative overflow-y-auto">
 
     <div class="bg-animate" id="star-layer"></div>
 
-    <div class="relative z-10 w-full max-w-md p-6 flex flex-col my-4 rounded-[45px] console-body mx-auto">
-        
-        <!-- 메인 화면 -->
-        <div class="game-screen w-full aspect-video mb-6 relative overflow-hidden screen-glass">
-            <div class="scanlines"></div>
-            <div id="header-video-container" class="absolute inset-0 w-full h-full bg-black z-0"></div>
+ <div class="relative z-10 w-full max-w-md p-6 flex flex-col my-4 rounded-[45px] console-body mx-auto">
+   <div class="game-screen w-full aspect-video mb-6 relative overflow-hidden screen-glass">
+    <div class="scanlines"></div>
+    
+    <div id="header-video-container" class="absolute inset-0 w-full h-full bg-black z-0 opacity-80"></div>
 
-            <div class="absolute inset-0 flex flex-col items-center justify-start pt-6 z-20 pointer-events-none">
-                <h1 class="text-2xl font-pixel text-white text-outline tracking-tighter drop-shadow-lg transform -rotate-1">
-                    Every Random DAY6
-                </h1>
-                <div class="bg-[#5D4037] px-2 py-0.5 rounded shadow-md mt-1 border border-white/10">
-                    <p class="text-[9px] font-bold text-white font-jua">데이식스 사랑해</p>
-                </div>
-            </div>
+    <div class="absolute inset-0 flex flex-col items-center justify-start pt-6 z-20 pointer-events-none">
+        <h1 class="text-2xl font-pixel text-white text-outline tracking-tighter drop-shadow-lg transform -rotate-1">
+            Every Random DAY6
+        </h1>
+        <div class="bg-[#5D4037] px-2 py-0.5 rounded shadow-md mt-1 border border-white/10">
+            <p class="text-[9px] font-bold text-white font-jua">
+                랜덤 식스
+            </p>
         </div>
+    </div>
+</div>
 
-        <!-- 가사 및 상태 영역 -->
+
         <div id="interaction-area" class="flex flex-col items-center justify-center min-h-[160px] mb-6 relative px-1">
             <div id="loading-state" class="hidden text-center text-white font-jua py-6">
-                <i data-lucide="music" class="w-10 h-10 animate-bounce mb-4 mx-auto text-yellow-400"></i>
-                <p class="text-sm mb-1">행복을 불러오는 중...</p>
-                <p class="text-[10px] opacity-70 animate-pulse">DAY6의 음악이 곧 시작됩니다</p>
+                <i data-lucide="refresh-cw" class="w-10 h-10 animate-spin mb-4 mx-auto text-yellow-400"></i>
+                <p class="text-sm mb-1">오늘의 데이식스 한 줄을 불러오는 중...</p>
+                <p class="text-[10px] opacity-70 animate-pulse">잠시 후 음악이 재생됩니다</p>
             </div>
 
-            <div id="result-state" class="w-full flex flex-col items-center">
+            <div id="result-state" class="w-full flex flex-col items-center animate-fade-in-up">
                 <div class="game-chat-box w-full">
                     <div class="chat-name-tag font-jua" id="result-speaker-label">DAY6</div>
-                    <div class="text-white text-lg leading-relaxed break-keep font-gamja" id="result-text-container">
-                        <span id="result-text">버튼을 눌러 시작하세요!</span>
+                    <div class="text-white text-xl leading-relaxed break-keep font-gamja" id="result-text-container">
+                        <span id="result-text">버튼을 눌러보세요</span>
                         <span class="cursor-blink"></span>
                     </div>
                     <div class="absolute bottom-2 right-3">
@@ -97,27 +121,20 @@
             </div>
         </div>
 
-        <!-- 컨트롤러 하단 -->
         <div class="grid grid-cols-2 gap-4 mt-auto z-10">
             <div class="flex flex-col items-center justify-center">
-                <div class="sub-screen screen-glass relative">
+                <div class="sub-screen screen-glass">
                     <div class="scanlines"></div>
-                    <div id="gif-loader" class="absolute inset-0 flex items-center justify-center z-20">
-                        <i data-lucide="loader-2" class="w-8 h-8 text-white animate-spin opacity-50"></i>
-                    </div>
-                    <img id="result-gif" src="" alt="" class="w-full h-full object-cover pixelated z-10 hidden">
-                    <div id="gif-error" class="hidden flex flex-col items-center z-10">
-                        <i data-lucide="image-off" class="w-6 h-6 text-gray-500"></i>
-                    </div>
+                    <img id="result-gif" src="" alt="" class="w-full h-full object-cover pixelated animate-fade-in-up">
                 </div>
-                <span class="text-[8px] font-pixel mt-2 text-[#5D4037] font-bold">RANDOM_DENIMALZ</span>
+                <span class="text-[8px] font-pixel mt-2 text-[#5D4037] font-bold">Random_Denimalz</span>
             </div>
 
             <div class="flex items-center justify-end gap-6 transform rotate-[-5deg] pr-2">
-                <div class="flex flex-col items-center">
-                    <button id="play-pause-btn" class="w-14 h-14 rounded-full action-button flex items-center justify-center text-white">
-                        <div id="play-pause-shape" class="play-mode"></div>
-                    </button>
+                 <div class="flex flex-col items-center">
+<button id="play-pause-btn" class="w-14 h-14 rounded-full action-button flex items-center justify-center text-white">
+    <div id="play-pause-shape" class="play-mode"></div>
+</button>
                     <span class="text-[10px] font-pixel mt-2 text-[#5D4037] font-bold">PLAY</span>
                 </div>
                 <div class="flex flex-col items-center -mt-8">
@@ -130,11 +147,11 @@
         </div>
     </div>
 
-    <!-- 미니 플레이어 -->
     <div id="mini-player" class="fixed bottom-6 z-50 w-full max-w-sm px-4 left-1/2 -translate-x-1/2">
         <div class="bg-[#FFF8E7] rounded-xl border-2 border-[#5D4037] p-3 shadow-2xl flex items-center justify-between">
             <div class="flex items-center gap-3 overflow-hidden text-left">
                 <div id="player-icon-container" class="w-10 h-10 rounded-full bg-[#333] border-2 border-[#5D4037] flex items-center justify-center text-white shrink-0 relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent"></div>
                     <div class="w-3 h-3 bg-[#FFF8E7] rounded-full border border-[#5D4037] z-10"></div>
                     <i data-lucide="disc-3" class="w-6 h-6 absolute opacity-20"></i>
                 </div>
@@ -142,122 +159,124 @@
                     <span id="player-song" class="text-sm font-bold text-[#5D4037] truncate">준비 중...</span>
                     <span class="text-[11px] text-[#8D6E63] truncate flex items-center gap-1">
                         <span class="w-1.5 h-1.5 bg-[#84CC16] rounded-full animate-pulse"></span>
-                        ON PLAYING (❁´◡`❁)
+                        행복 재생 중 (❁´◡`❁)
                     </span>
                 </div>
             </div>
-            <div id="air-tag" class="bg-[#5D4037] text-white px-2 py-0.5 text-[8px] font-pixel rounded animate-pulse shadow-sm">ON_AIR</div>
+            <div class="bg-[#5D4037] text-white px-2 py-0.5 text-[8px] font-pixel rounded animate-pulse shadow-sm">ON_AIR</div>
         </div>
     </div>
 
     <script>
-    let player;
-    let isAnimating = false;
-    let isPlaying = false;
-    let currentVideoId = null;
+    document.addEventListener('DOMContentLoaded', function() {
+        lucide.createIcons();
 
-    // 비디오 ID 추출 함수
-    function extractVideoId(url) {
-        if (!url) return "iQBOu81LkT0";
-        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-        const match = url.match(regExp);
-        return (match && match[2].length === 11) ? match[2] : url;
-    }
+        // --- 별 배경 ---
+        const starLayer = document.getElementById('star-layer');
+        for (let i = 0; i < 40; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            const size = Math.random() * 4 + 2;
+            star.style.width = size + 'px'; star.style.height = size + 'px';
+            star.style.left = Math.random() * 100 + 'vw'; star.style.top = Math.random() * 100 + 'vh';
+            star.style.setProperty('--duration', (Math.random() * 3 + 2) + 's');
+            starLayer.appendChild(star);
+        }
 
-    const songUrlMap = {
-        
-        "한 페이지가 될 수 있게": "https://youtu.be/iQBOu81LkT0?si=hhD46vLrVNGHlhHj",
-            "Best Part": "https://youtu.be/a-UfQfufkgU?si=w9aejI5CRqKggjYb",
-            "행운을 빌어 줘": "https://youtu.be/hrXCP0xeoA8?si=OyYOG2earR7aeDBh",
-            "문득": "https://youtu.be/8xg7h1OTrsc?si=Eefh_Ojf3NZ4aK4Y",
-            "My Way": "https://youtu.be/G45bO2CYba0?si=GZc4KHJt0-j-Y3Eu",
-            "날아라! 드림라이더": "https://youtu.be/CYj8d_2eD3U?si=yAlcqFt8KvLp2DKP",
-            "꿈의 버스": "https://youtu.be/hZ6pts6e8dI?list=OLAK5uy_nJSgUuANm4aVAPhisS6MdUk1ZaZDdeU8s&t=31",
-            "망겜 (Shxtty Game)": "https://youtu.be/mqxDy2_GVLU?si=2IFCNMYpeOnDmT8D",
-            "Counter": "https://youtu.be/B9vB01PEnzE?si=zuvkW-L-kG3wTHMY",
-            "Dance Dance": "https://youtu.be/uPo7yoCSbI4?si=8eqBn530DlVHH1Ra",
-            "Free하게": "https://youtu.be/SujoDZYCMCs?si=WZluFQcAzgqrG9gy",
-            "For Me": "https://youtu.be/UTmMpCBsF8Y?si=bGX06p_YvBeNujDf",
-            "EASY": "https://youtu.be/0kZABfrug1o?si=i6Ra4fPCX8pPnkYs",
-            "드디어 끝나갑니다": "https://youtu.be/t5vHBX07Qb4?si=y8_CjS09pG_Y8xGH",
-            "녹아내려요": "https://youtu.be/KlpSc6Jvci8?si=9Zgcxvdj6nQDrHTQ",
-            "let it be summer": "https://youtu.be/uTxtBbO8Psw?si=XHI6TRS5YD8DivTE",
-            "꿈꾼 (Dreamer)": "https://youtu.be/ccKikk71rtM?si=VlDpFIeer_19zdbU",
-            "You make Me": "https://youtu.be/ZbcTTMtAe48?si=2TMQ-BFp0yYSwxyb",
-            "playground": "https://youtu.be/RB0DwJxtyp8?si=bXgSvVuzC5y1m6BX",
-            "안녕, 잘 가": "https://youtu.be/rUfvHFsxxTA?si=6EhvqT_Hud5d9bAI",
-            "행복했던 날들이었다": "https://youtu.be/okKTpSnwpQA?si=c9AGOjYhelibje_B",
-            "Marathon": "https://youtu.be/ClwEVvUgxEE?si=jiJ2n4J4E7F27mWQ",
-            "I'm Fine": "https://youtu.be/TzC7Tsd6eBw?si=FworhlxrnmS5_Qb1",
-            "동화 속 아이처럼": "https://youtu.be/S2SuL7jfSDk?si=ZrVx7ge5bG-LkbG7",
-            "좋아합니다": "https://youtu.be/daoMYJv8i0c?si=nL-w5OHUPi1NPoZO",
-            "그렇더라고요": "https://youtu.be/F3lki7udJU0?si=wNEMBmSjssCIsTnb",
-            "노력해볼게요": "https://youtu.be/BpfbDvGpm7c?si=kFKkJn9M4p-3qP-r",
-            "둘도 아닌 하나": "https://youtu.be/HIDranJqHLQ?si=guTyxn_tXp46F_9G",
-            "Beautiful Feeling": "https://youtu.be/EJOk3VsupUA?si=AbdAozV_KvSGmXAj",
-            "Man in a movie": "https://youtu.be/nU2ESuG0SLk?si=lrfwVA7LO736i74Z",
-            "예뻤어": "https://youtu.be/BS7tz2rAOSA?si=WAehLBHGmmUkEmOG",
-            "사랑, 이게 맞나 봐": "https://youtu.be/k1SaWQO0_fM?si=p7soCEuO5VO-v71n",
-            "natural": "https://youtu.be/xn-X1yjM0kQ?si=AtoExC-uPe-vimr2",
-            "Love me or Leave me": "https://youtu.be/LlFcvjDBSCU?si=aL1z2B1UoM5E1KHo",
-            "그게 너의 사랑인지 몰랐어": "https://youtu.be/1SUou1akUfM?si=tg-4wgvadhE_nQL0",
-            "want to love you": "https://youtu.be/Er0VxHCsxDc?si=RLB-MEAvWyPNgRr4",
-            "해야 뜨지 말아 줘": "https://youtu.be/Lp4x8WsGwCo?si=51UYNnXpkEhpEg7b",
-            "Finale": "https://youtu.be/1ZrX9ytcm4A?si=NZZbgoKWq639XbIC",
-            "INSIDE OUT": "https://youtu.be/VEDkhmvjHcY?si=EE1LahNf3qshw7BZ",
-            "Take All My Heart": "https://youtu.be/IXBQiT2FMb0?si=gcEnVUUFYdtQi-hr",
-            "1 to 10": "https://youtu.be/0an2t_97iCA?si=cHp3A-e_2cN3GbQ-",
-            "Chocolate": "https://youtu.be/-VvIYhepewA?si=aIiVN65LvWVdzlPN",
-            "우리 앞으로 더 사랑하자": "https://youtu.be/iM8U6n1hyK8?si=fcj8LnwM9oKh5DUG",
-            "아직 거기 살아": "https://youtu.be/KzXkHD3W7Pk?si=qTuHoiKW0u9NRvFF",
-            "Sing Me": "https://youtu.be/PO2VvKdqusw?si=9sudT1_sHc9ZWH3p",
-            "君なら(너라면)": "https://youtu.be/S3XTnEcLFnA?si=pq58Px1SX7D4ePFZ",
-            "If ~また逢えたら~": "https://youtu.be/unS_PcMn3RA?si=H-NJahillnyWOV90",
-            "Baby, it's okay": "https://youtu.be/oMUM66njZO8?si=2YbEZuGZFHFmhq-F",
-            "파도가 끝나는 곳까지": "https://youtu.be/_NmzMzjoJyk?si=Zrx0Kmgd5-taBrZ2",
-            "everyday we fight": "https://youtu.be/a1icUrWPUD4?si=k7fWs8Q70Ly_xKlR",
-            "사랑하게 해주라": "https://youtu.be/0JC4cm2fXsc?si=Oi-EwJKW3yXu8IGX",
-            "어디에도 없는 널": "https://youtu.be/GjxHiJnsePs?si=zhCavSqjKnIM1Ai9",
-            "You Wake Me Up": "https://youtu.be/HwcCBnfhsR4?si=us3FHgDu7s6UftcL",
-            "Zombie": "https://youtu.be/k8gx-C7GCGU?si=AjGo1oKrt_riWvCZ",
-            "Healer": "https://youtu.be/TBowwhu8GHk?si=5tnWS2KNVp14Kho0",
-            "잘 자라 내 사람아": "https://youtu.be/okVE_p9BAFM?si=pryM2CeJoxQX4Nc3",
-            "언젠가 봄은 찾아올 거야": "https://youtu.be/RJyWFx1gjA4?si=jGDTpkrN4sLnn8Zz",
-            "나무는 결국 겨울을 견뎌낼 거야": "https://youtu.be/_iyL9y-SI6E?si=_GZ4FB1fJT8vKhNj",
-            "아무것도 안 하고 싶다": "https://youtu.be/-hb22SIK8mM?si=48419oN4IPcwn3rN",
-            "Afraid": "https://youtu.be/RKJvo6fAMmg?si=DwlqXk-Ntcj_wELG",
-            "포장": "https://youtu.be/Bfxgv1a0Ffk?si=tNuY0MvxwZWrHUmi",
-            "나 홀로 집에": "https://youtu.be/gziLoBRf8Ho?si=5Rqewrh6Nio9GzQW",
-            "구름 위에서": "https://youtu.be/jTwJfDI0ePc?si=_-y75NNTzcqhkPn5",
-            "Check Pattern": "https://youtu.be/3qcX_kz84bo?si=TBspAzO3hnQpcdwt",
-            "끝까지 안아 줄게": "https://youtu.be/tLcynwlNh38?si=-4eNUD6Fz78L8sQk",
-            "아픈 길": "https://youtu.be/PAE88urB1xs?si=jF1YIOvY1-bhHzE2",
-            "아 왜": "https://youtu.be/bcN101tdUsE?si=yzWgs-q_xZUw8vxQ",
-            "오늘은 내게": "https://youtu.be/v13D8TCmvBQ?si=QNhsVBUULuV9kGea",
-            "겨울이 간다": "https://youtu.be/ythA128geTE?si=rNK3GiQWUKzWTpHz",
-            "괴물": "https://youtu.be/47OLnr_hYFc?si=9RhzEEqUZ6t8iqDX",
-            "누군가 필요해": "https://youtu.be/bk-zK33vxWA?si=XB725pdpr1yuiTTg",
-            "Shoot Me": "https://www.youtube.com/embed/g25qt2v_bII",
-            "Congratulations": "https://youtu.be/Pp8Bza15AWY?si=PmzKB5xQXyH2jFxQ",
-            "Welcome to the Show": "https://youtu.be/AHy7z1ABnZE?si=WVQBASnDgrnjGAkh",
-            "무적": "https://youtu.be/aoTdW4GLtIQ?si=Mq3L-ftu1kJPu0Tc",
-            "원하니까": "https://youtu.be/4aPuslJEjnY?si=T6Xq_CEDTMaD5vn2",
-            "메이플라떼": "https://youtu.be/HUTOzH05XmE?si=t47EsSfGWLZp9XQ8",
-            "우린": "https://youtu.be/7mdHYSX7jbU?si=Vy4GsxrYkFKaAyZb",
-            "Maybe Tomorrow": "https://youtu.be/LbQCFWB_8S0?si=eyKe5MIy1Uf9zSbX",
-            "우리의 계절": "https://youtu.be/eN8Fl7_9SnQ?si=n2OkjN4AZqJVD3Hz",
-            "땡스 투": "https://youtu.be/-e7mCnwTXqI?si=NCUIegt6fXA3hk6Q",
-            "그녀가 웃었다": "https://youtu.be/09ig852MsMg?si=F48wzRZNflOFZf5M",
-            "How to love": "https://youtu.be/qCZm8abq8Co?si=Pgc8twrphH5gQtP5",
-            "역대급 (WALK)": "https://youtu.be/MNZEBpB0Ub8?si=RQABRGpF0xLBYtaz",
-            "별들 앞에서 Before the Stars": "https://youtu.be/2fKmtgIseZE?si=2-I7jdMLVsh9oQ79",
-            "Disco Day": "https://youtu.be/uQrCIR5aSto?si=U7uejNC7KtoDjje-",
-            "바래 Wish": "https://youtu.be/nYf1adRyd0w?si=b4YOs-9gej0QQq2H",
-            "어쩌다 보니": "https://youtu.be/S8bQtknSNW0?si=6D0hZm48tA0Wa7bj",
-            "남겨둘게": "https://youtu.be/4DSuRqiK9gk?si=wDkmCTd_sM7G22vG",
-            "장난 아닌데": "https://youtu.be/ZmHQbzbM8pI?si=rNRj6wj-ekamhaE3",
-            "Better Better": "https://youtu.be/kQBAEEWwRgo?si=VcgpGhqac1MmirmT",
-            "The Power of Love": "https://youtu.be/dRF_NIsIoUs?si=kPmYQ0Tka394GU7D",
+        // --- 데이터 (1개 예시) ---
+        const songUrlMap = {
+   "한 페이지가 될 수 있게": "https://youtu.be/iQBOu81LkT0?si=hhD46vLrVNGHlhHj",
+            "Best Part": "https://youtu.be/a-UfQfufkgU?si=w9aejI5CRqKggjYb",
+            "행운을 빌어 줘": "https://youtu.be/hrXCP0xeoA8?si=OyYOG2earR7aeDBh",
+            "문득": "https://youtu.be/8xg7h1OTrsc?si=Eefh_Ojf3NZ4aK4Y",
+            "My Way": "https://youtu.be/G45bO2CYba0?si=GZc4KHJt0-j-Y3Eu",
+            "날아라! 드림라이더": "https://youtu.be/CYj8d_2eD3U?si=yAlcqFt8KvLp2DKP",
+            "꿈의 버스": "https://youtu.be/hZ6pts6e8dI?list=OLAK5uy_nJSgUuANm4aVAPhisS6MdUk1ZaZDdeU8s&t=31",
+            "망겜 (Shxtty Game)": "https://youtu.be/mqxDy2_GVLU?si=2IFCNMYpeOnDmT8D",
+            "Counter": "https://youtu.be/B9vB01PEnzE?si=zuvkW-L-kG3wTHMY",
+            "Dance Dance": "https://youtu.be/uPo7yoCSbI4?si=8eqBn530DlVHH1Ra",
+            "Free하게": "https://youtu.be/SujoDZYCMCs?si=WZluFQcAzgqrG9gy",
+            "For Me": "https://youtu.be/UTmMpCBsF8Y?si=bGX06p_YvBeNujDf",
+            "EASY": "https://youtu.be/0kZABfrug1o?si=i6Ra4fPCX8pPnkYs",
+            "드디어 끝나갑니다": "https://youtu.be/t5vHBX07Qb4?si=y8_CjS09pG_Y8xGH",
+            "녹아내려요": "https://youtu.be/KlpSc6Jvci8?si=9Zgcxvdj6nQDrHTQ",
+            "let it be summer": "https://youtu.be/uTxtBbO8Psw?si=XHI6TRS5YD8DivTE",
+            "꿈꾼 (Dreamer)": "https://youtu.be/ccKikk71rtM?si=VlDpFIeer_19zdbU",
+            "You make Me": "https://youtu.be/ZbcTTMtAe48?si=2TMQ-BFp0yYSwxyb",
+            "playground": "https://youtu.be/RB0DwJxtyp8?si=bXgSvVuzC5y1m6BX",
+            "안녕, 잘 가": "https://youtu.be/rUfvHFsxxTA?si=6EhvqT_Hud5d9bAI",
+            "행복했던 날들이었다": "https://youtu.be/okKTpSnwpQA?si=c9AGOjYhelibje_B",
+            "Marathon": "https://youtu.be/ClwEVvUgxEE?si=jiJ2n4J4E7F27mWQ",
+            "I'm Fine": "https://youtu.be/TzC7Tsd6eBw?si=FworhlxrnmS5_Qb1",
+            "동화 속 아이처럼": "https://youtu.be/S2SuL7jfSDk?si=ZrVx7ge5bG-LkbG7",
+            "좋아합니다": "https://youtu.be/daoMYJv8i0c?si=nL-w5OHUPi1NPoZO",
+            "그렇더라고요": "https://youtu.be/F3lki7udJU0?si=wNEMBmSjssCIsTnb",
+            "노력해볼게요": "https://youtu.be/BpfbDvGpm7c?si=kFKkJn9M4p-3qP-r",
+            "둘도 아닌 하나": "https://youtu.be/HIDranJqHLQ?si=guTyxn_tXp46F_9G",
+            "Beautiful Feeling": "https://youtu.be/EJOk3VsupUA?si=AbdAozV_KvSGmXAj",
+            "Man in a movie": "https://youtu.be/nU2ESuG0SLk?si=lrfwVA7LO736i74Z",
+            "예뻤어": "https://youtu.be/BS7tz2rAOSA?si=WAehLBHGmmUkEmOG",
+            "사랑, 이게 맞나 봐": "https://youtu.be/k1SaWQO0_fM?si=p7soCEuO5VO-v71n",
+            "natural": "https://youtu.be/xn-X1yjM0kQ?si=AtoExC-uPe-vimr2",
+            "Love me or Leave me": "https://youtu.be/LlFcvjDBSCU?si=aL1z2B1UoM5E1KHo",
+            "그게 너의 사랑인지 몰랐어": "https://youtu.be/1SUou1akUfM?si=tg-4wgvadhE_nQL0",
+            "want to love you": "https://youtu.be/Er0VxHCsxDc?si=RLB-MEAvWyPNgRr4",
+            "해야 뜨지 말아 줘": "https://youtu.be/Lp4x8WsGwCo?si=51UYNnXpkEhpEg7b",
+            "Finale": "https://youtu.be/1ZrX9ytcm4A?si=NZZbgoKWq639XbIC",
+            "INSIDE OUT": "https://youtu.be/VEDkhmvjHcY?si=EE1LahNf3qshw7BZ",
+            "Take All My Heart": "https://youtu.be/IXBQiT2FMb0?si=gcEnVUUFYdtQi-hr",
+            "1 to 10": "https://youtu.be/0an2t_97iCA?si=cHp3A-e_2cN3GbQ-",
+            "Chocolate": "https://youtu.be/-VvIYhepewA?si=aIiVN65LvWVdzlPN",
+            "우리 앞으로 더 사랑하자": "https://youtu.be/iM8U6n1hyK8?si=fcj8LnwM9oKh5DUG",
+            "아직 거기 살아": "https://youtu.be/KzXkHD3W7Pk?si=qTuHoiKW0u9NRvFF",
+            "Sing Me": "https://youtu.be/PO2VvKdqusw?si=9sudT1_sHc9ZWH3p",
+            "君なら(너라면)": "https://youtu.be/S3XTnEcLFnA?si=pq58Px1SX7D4ePFZ",
+            "If ~また逢えたら~": "https://youtu.be/unS_PcMn3RA?si=H-NJahillnyWOV90",
+            "Baby, it's okay": "https://youtu.be/oMUM66njZO8?si=2YbEZuGZFHFmhq-F",
+            "파도가 끝나는 곳까지": "https://youtu.be/_NmzMzjoJyk?si=Zrx0Kmgd5-taBrZ2",
+            "everyday we fight": "https://youtu.be/a1icUrWPUD4?si=k7fWs8Q70Ly_xKlR",
+            "사랑하게 해주라": "https://youtu.be/0JC4cm2fXsc?si=Oi-EwJKW3yXu8IGX",
+            "어디에도 없는 널": "https://youtu.be/GjxHiJnsePs?si=zhCavSqjKnIM1Ai9",
+            "You Wake Me Up": "https://youtu.be/HwcCBnfhsR4?si=us3FHgDu7s6UftcL",
+            "Zombie": "https://youtu.be/k8gx-C7GCGU?si=AjGo1oKrt_riWvCZ",
+            "Healer": "https://youtu.be/TBowwhu8GHk?si=5tnWS2KNVp14Kho0",
+            "잘 자라 내 사람아": "https://youtu.be/okVE_p9BAFM?si=pryM2CeJoxQX4Nc3",
+            "언젠가 봄은 찾아올 거야": "https://youtu.be/RJyWFx1gjA4?si=jGDTpkrN4sLnn8Zz",
+            "나무는 결국 겨울을 견뎌낼 거야": "https://youtu.be/_iyL9y-SI6E?si=_GZ4FB1fJT8vKhNj",
+            "아무것도 안 하고 싶다": "https://youtu.be/-hb22SIK8mM?si=48419oN4IPcwn3rN",
+            "Afraid": "https://youtu.be/RKJvo6fAMmg?si=DwlqXk-Ntcj_wELG",
+            "포장": "https://youtu.be/Bfxgv1a0Ffk?si=tNuY0MvxwZWrHUmi",
+            "나 홀로 집에": "https://youtu.be/gziLoBRf8Ho?si=5Rqewrh6Nio9GzQW",
+            "구름 위에서": "https://youtu.be/jTwJfDI0ePc?si=_-y75NNTzcqhkPn5",
+            "Check Pattern": "https://youtu.be/3qcX_kz84bo?si=TBspAzO3hnQpcdwt",
+            "끝까지 안아 줄게": "https://youtu.be/tLcynwlNh38?si=-4eNUD6Fz78L8sQk",
+            "아픈 길": "https://youtu.be/PAE88urB1xs?si=jF1YIOvY1-bhHzE2",
+            "아 왜": "https://youtu.be/bcN101tdUsE?si=yzWgs-q_xZUw8vxQ",
+            "오늘은 내게": "https://youtu.be/v13D8TCmvBQ?si=QNhsVBUULuV9kGea",
+            "겨울이 간다": "https://youtu.be/ythA128geTE?si=rNK3GiQWUKzWTpHz",
+            "괴물": "https://youtu.be/47OLnr_hYFc?si=9RhzEEqUZ6t8iqDX",
+            "누군가 필요해": "https://youtu.be/bk-zK33vxWA?si=XB725pdpr1yuiTTg",
+            "Shoot Me": "https://www.youtube.com/embed/g25qt2v_bII",
+            "Congratulations": "https://youtu.be/Pp8Bza15AWY?si=PmzKB5xQXyH2jFxQ",
+            "Welcome to the Show": "https://youtu.be/AHy7z1ABnZE?si=WVQBASnDgrnjGAkh",
+            "무적": "https://youtu.be/aoTdW4GLtIQ?si=Mq3L-ftu1kJPu0Tc",
+            "원하니까": "https://youtu.be/4aPuslJEjnY?si=T6Xq_CEDTMaD5vn2",
+            "메이플라떼": "https://youtu.be/HUTOzH05XmE?si=t47EsSfGWLZp9XQ8",
+            "우린": "https://youtu.be/7mdHYSX7jbU?si=Vy4GsxrYkFKaAyZb",
+            "Maybe Tomorrow": "https://youtu.be/LbQCFWB_8S0?si=eyKe5MIy1Uf9zSbX",
+            "우리의 계절": "https://youtu.be/eN8Fl7_9SnQ?si=n2OkjN4AZqJVD3Hz",
+            "땡스 투": "https://youtu.be/-e7mCnwTXqI?si=NCUIegt6fXA3hk6Q",
+            "그녀가 웃었다": "https://youtu.be/09ig852MsMg?si=F48wzRZNflOFZf5M",
+            "How to love": "https://youtu.be/qCZm8abq8Co?si=Pgc8twrphH5gQtP5",
+            "역대급 (WALK)": "https://youtu.be/MNZEBpB0Ub8?si=RQABRGpF0xLBYtaz",
+            "별들 앞에서 Before the Stars": "https://youtu.be/2fKmtgIseZE?si=2-I7jdMLVsh9oQ79",
+            "Disco Day": "https://youtu.be/uQrCIR5aSto?si=U7uejNC7KtoDjje-",
+            "바래 Wish": "https://youtu.be/nYf1adRyd0w?si=b4YOs-9gej0QQq2H",
+            "어쩌다 보니": "https://youtu.be/S8bQtknSNW0?si=6D0hZm48tA0Wa7bj",
+            "남겨둘게": "https://youtu.be/4DSuRqiK9gk?si=wDkmCTd_sM7G22vG",
+            "장난 아닌데": "https://youtu.be/ZmHQbzbM8pI?si=rNRj6wj-ekamhaE3",
+            "Better Better": "https://youtu.be/kQBAEEWwRgo?si=VcgpGhqac1MmirmT",
+            "The Power of Love": "https://youtu.be/dRF_NIsIoUs?si=kPmYQ0Tka394GU7D",
 "버릇이 됐어": "https://youtu.be/w9m-nIzmS3Y?si=R6pwirX57ZknnSq-",
 "365247": "https://youtu.be/HnQNNoA5abk?si=h50Snz1tp0IkSOB-",
 "태양처럼": "https://youtu.be/h7cWseDQ4to?si=0faErqmdc7ANundK",
@@ -281,10 +300,9 @@
 "Say Wow": "https://youtu.be/8meVwcHtoQk?list=RD8meVwcHtoQk",
 "Sweet Chaos": "https://youtu.be/hoKz_O4OmCA?list=RDhoKz_O4OmCA",
 "Tick Tock": "https://youtu.be/L6obEteHeLM?list=RDL6obEteHeLM",
+        };
+        const lyricsData = [
 
-   
-
-    const lyricsData = [
   {
     "text": "낮이 밝아도 아무 문제없어 커튼은 언제라도 칠 수 있으니까 걱정 마",
     "song": "365247",
@@ -2272,166 +2290,123 @@
     "album": "The Book of Us : The Demon"
   }
 
+        ];
 
+        let isAnimating = false;
+        let isPlaying = false;
+        let currentVideoId = null;
 
-    ];
-
-    function onYouTubeIframeAPIReady() {
-        player = new YT.Player('header-video-container', {
-            height: '100%',
-            width: '100%',
-            videoId: 'iQBOu81LkT0',
-            playerVars: {
-                'autoplay': 0,
-                'controls': 0,
-                'rel': 0,
-                'modestbranding': 1,
-                'loop': 1,
-                'playlist': 'iQBOu81LkT0'
-            },
-            events: {
-                'onReady': onPlayerReady,
-                'onStateChange': onPlayerStateChange
-            }
-        });
-    }
-
-    function onPlayerReady(event) {
-        console.log("Player Ready");
-        // 초기 로딩 시 데이터 하나 세팅
-        const initial = lyricsData[0];
-        document.getElementById('result-text').innerText = `"${initial.text}"`;
-        document.getElementById('result-speaker-label').innerText = `${initial.artist} | ${initial.album}`;
-        document.getElementById('player-song').innerText = initial.song;
-    }
-
-    function onPlayerStateChange(event) {
-        if (event.data === YT.PlayerState.PLAYING) {
-            isPlaying = true;
-            updateControls(true);
-        } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
-            isPlaying = false;
-            updateControls(false);
-        }
-    }
-
-    // 핵심: 리롤(랜덤 뽑기) 기능
-    function drawFortune() {
-        if (isAnimating) return;
-        isAnimating = true;
-
+        const drawBtn = document.getElementById('draw-btn');
+        const playPauseBtn = document.getElementById('play-pause-btn');
+        const playPauseIcon = document.getElementById('play-pause-icon');
         const loadingState = document.getElementById('loading-state');
         const resultState = document.getElementById('result-state');
         const resultGif = document.getElementById('result-gif');
-        const gifLoader = document.getElementById('gif-loader');
-        const gifError = document.getElementById('gif-error');
-
-        // 상태 전환
-        resultState.style.display = 'none';
-        loadingState.classList.remove('hidden');
-        
-        // GIF 상태 초기화
-        resultGif.classList.add('hidden');
-        gifLoader.classList.remove('hidden');
-        gifError.classList.add('hidden');
-        
-        // 데이터 랜덤 선택
-        const randomIdx = Math.floor(Math.random() * lyricsData.length);
-        const randomLyric = lyricsData[randomIdx];
-        const videoId = extractVideoId(songUrlMap[randomLyric.song] || "iQBOu81LkT0");
-        
-        // UI 업데이트
-        document.getElementById('result-text').innerText = `"${randomLyric.text}"`;
-        document.getElementById('result-speaker-label').innerText = `${randomLyric.artist} | ${randomLyric.album}`;
-        document.getElementById('player-song').innerText = randomLyric.song;
-
-        // GIF 랜덤 선택 (임시 placeholder 활용 - 실제 파일이 없을 경우 대비)
-        const randomGifNum = Math.floor(Math.random() * 5) + 1;
-        // 실제 프로젝트 폴더에 1.gif~5.gif가 있다고 가정하거나 외부 API를 연결하세요.
-        // 여기서는 에러 처리를 통해 이미지가 없어도 앱이 멈추지 않게 합니다.
-        resultGif.src = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${randomLyric.song}`; 
-        
-        resultGif.onload = () => {
-            gifLoader.classList.add('hidden');
-            resultGif.classList.remove('hidden');
-        };
-        resultGif.onerror = () => {
-            gifLoader.classList.add('hidden');
-            gifError.classList.remove('hidden');
-        };
-
-        // 유튜브 영상 변경
-        if (player && player.loadVideoById) {
-            player.loadVideoById(videoId);
-            player.playVideo();
-        }
-
-        // 지연 후 가사창 노출 (애니메이션 효과)
-        setTimeout(() => {
-            loadingState.classList.add('hidden');
-            resultState.style.display = 'flex';
-            resultState.classList.add('animate-fade-in-up');
-            isAnimating = false;
-        }, 800);
-    }
-
-    function togglePlay() {
-        if (!player) return;
-        if (isPlaying) {
-            player.pauseVideo();
-        } else {
-            player.playVideo();
-        }
-    }
-
-    function updateControls(playing) {
-        const shape = document.getElementById('play-pause-shape');
+        const resultText = document.getElementById('result-text');
+        const resultSpeakerLabel = document.getElementById('result-speaker-label');
+        const playerSongText = document.getElementById('player-song');
+        const headerVideoContainer = document.getElementById('header-video-container');
         const playerIcon = document.getElementById('player-icon-container');
-        const airTag = document.getElementById('air-tag');
 
-        if (playing) {
-            shape.className = 'pause-mode';
-            playerIcon.classList.add('animate-cd');
-            airTag.innerText = "ON_AIR";
-            airTag.classList.remove('bg-red-500');
-            airTag.classList.add('bg-[#5D4037]');
-        } else {
-            shape.className = 'play-mode';
-            playerIcon.classList.remove('animate-cd');
-            airTag.innerText = "PAUSED";
-            airTag.classList.add('bg-red-500');
+        function getYouTubeId(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : "iQBOu81LkT0";
         }
+
+        function embedVideo(videoId) {
+            headerVideoContainer.innerHTML = '';
+            const iframe = document.createElement('iframe');
+            iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&loop=1&playlist=${videoId}&controls=0&enablejsapi=1&origin=${window.location.origin}`;
+            iframe.allow = "autoplay; encrypted-media";
+            headerVideoContainer.appendChild(iframe);
+        }
+
+        function drawFortune() {
+            if (isAnimating) return;
+            isAnimating = true;
+
+            resultState.classList.add('hidden');
+            loadingState.classList.remove('hidden');
+            
+            const randomLyric = lyricsData[Math.floor(Math.random() * lyricsData.length)];
+            const randomGifNum = Math.floor(Math.random() * 40) + 1;
+            const videoId = getYouTubeId(songUrlMap[randomLyric.song]);
+            
+            currentVideoId = videoId;
+            isPlaying = true;
+            playerSongText.innerText = randomLyric.song;
+
+            // 로딩 연출을 위해 약간의 지연
+            setTimeout(() => {
+                embedVideo(videoId);
+                updateControls(true);
+                
+                loadingState.classList.add('hidden');
+                resultState.classList.remove('hidden');
+
+                resultText.innerText = `"${randomLyric.text}"`;
+                resultSpeakerLabel.innerText = `${randomLyric.artist} | ${randomLyric.album}`;
+                resultGif.src = `${randomGifNum}.gif`;
+
+                isAnimating = false;
+                lucide.createIcons();
+            }, 1500);
+        }
+
+        function togglePlay() {
+            if (!currentVideoId) return;
+            isPlaying = !isPlaying;
+            updateControls(isPlaying);
+            if (isPlaying) embedVideo(currentVideoId);
+            else headerVideoContainer.innerHTML = '<div class="w-full h-full flex items-center justify-center text-white font-pixel text-xs bg-[#111]">PAUSED</div>';
+        }
+
+function updateControls(playing) {
+    const shape = document.getElementById('play-pause-shape');
+    
+    if (playing) {
+        // 재생 중일 때는 '일시정지' 모양으로
+        shape.classList.remove('play-mode');
+        shape.classList.add('pause-mode');
+        playerIcon.classList.add('animate-cd');
+    } else {
+        // 정지 중일 때는 '재생' 모양으로
+        shape.classList.remove('pause-mode');
+        shape.classList.add('play-mode');
+        playerIcon.classList.remove('animate-cd');
     }
+    
+    // 루사이드 아이콘 업데이트는 다른 아이콘들을 위해 유지
+    lucide.createIcons();
+}
 
-    document.addEventListener('DOMContentLoaded', function() {
-        lucide.createIcons();
-
-        // 별 배경 생성
-        const starLayer = document.getElementById('star-layer');
-        for (let i = 0; i < 30; i++) {
-            const star = document.createElement('div');
-            star.className = 'star';
-            const size = Math.random() * 3 + 1;
-            star.style.width = size + 'px'; 
-            star.style.height = size + 'px';
-            star.style.left = Math.random() * 100 + 'vw'; 
-            star.style.top = Math.random() * 100 + 'vh';
-            star.style.setProperty('--duration', (Math.random() * 3 + 2) + 's');
-            starLayer.appendChild(star);
-        }
-
-        // 버튼 이벤트 바인딩
-        document.getElementById('draw-btn').addEventListener('click', drawFortune);
-        document.getElementById('play-pause-btn').addEventListener('click', togglePlay);
-
-        // 첫 클릭 시 오디오 활성화 대기
+        drawBtn.addEventListener('click', drawFortune);
+        playPauseBtn.addEventListener('click', togglePlay);
+        
+        // 페이지 진입 시 자동 실행 (브라우저 정책 대응: 사용자가 어디든 클릭하면 바로 실행)
         window.addEventListener('click', () => {
-            if (player && player.getPlayerState && player.getPlayerState() === -1) {
-                // 아직 시작 안했으면 시작
-            }
+            if(!currentVideoId && !isAnimating) drawFortune();
         }, { once: true });
+
+        // 초기 실행 시도
+        drawFortune();
     });
+// 휴대폰 기울기 감지 및 배경 이동
+window.addEventListener('deviceorientation', function(event) {
+    const bg = document.querySelector('.bg-animate');
+    
+    // 기울기 값 (beta: 앞뒤, gamma: 좌우)
+    const x = event.gamma; // -90 ~ 90
+    const y = event.beta;  // -180 ~ 180
+
+    // 이미지가 너무 많이 움직이지 않도록 보정 (0.5는 감도입니다)
+    const moveX = x * 0.5;
+    const moveY = (y - 45) * 0.5; // 보통 45도 정도로 들고 보므로 45를 뺌
+
+    // 배경 이미지의 위치만 미세하게 조정 (상단 중앙 50px 기준)
+    bg.style.backgroundPosition = `calc(50% + ${moveX}px) calc(0% + ${50 + moveY}px), center`;
+});
     </script>
 </body>
 </html>
-
