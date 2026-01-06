@@ -8,6 +8,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Silkscreen&family=Jua&family=Gamja+Flower&family=Nanum+Gothic+Coding&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- 유튜브 IFrame API 로드 -->
+    <script src="https://www.youtube.com/iframe_api"></script>
     
     <style>
         body { 
@@ -29,7 +31,10 @@
         .screen-glass::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 60%); pointer-events: none; z-index: 15; }
         .sub-screen { background-color: #000; border: 4px solid #5D4037; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; border-radius: 8px; overflow: hidden; position: relative; }
         .scanlines { background: linear-gradient(to bottom, rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 50%); background-size: 100% 4px; position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: 10; }
-        #header-video-container iframe { position: absolute; top: 50%; left: 50%; width: 300%; height: 300%; transform: translate(-50%, -50%); object-fit: cover; pointer-events: none; }
+        
+        /* 비디오 컨테이너: API가 생성하는 iframe이 가득 차도록 설정 */
+        #header-video-container iframe { width: 100%; height: 100%; object-fit: cover; }
+        
         .game-chat-box { background: linear-gradient(180deg, rgba(40, 40, 40, 0.95) 0%, rgba(10, 10, 10, 0.95) 100%); border: 3px solid #fff; outline: 3px solid #000; position: relative; padding: 22px 15px 15px 15px; box-shadow: 0 8px 0 rgba(0,0,0,0.5); min-height: 120px; }
         .chat-name-tag { position: absolute; top: -15px; left: 10px; background-color: #fff; border: 2px solid #000; padding: 2px 10px; color: #000; font-size: 11px; font-weight: bold; z-index: 20; }
         .action-button { background: linear-gradient(145deg, #D32F2F, #B71C1C); border-bottom: 6px solid #7f0000; transition: all 0.1s ease; }
@@ -39,17 +44,7 @@
         .play-mode { width: 0; height: 0; border-style: solid; border-width: 12px 0 12px 20px; border-color: transparent transparent transparent #ffffff; margin-left: 5px; }
         .pause-mode { width: 16px; height: 20px; border-style: double; border-width: 0 0 0 16px; border-color: #ffffff; }
 
-        .bg-animate { 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            z-index: -1; 
-            background: 
-                url('https://i.postimg.cc/3w7TSPqc/image.png') no-repeat center top / 40%, 
-                linear-gradient(180deg, #0f0c29 0%, #302b63 50%, #24243e 100%); 
-        }
+        .bg-animate { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: url('https://i.postimg.cc/3w7TSPqc/image.png') no-repeat center top / 500px, linear-gradient(180deg, #0f0c29 0%, #302b63 50%, #24243e 100%); }
         .star { position: absolute; background-color: #fff; animation: twinkle var(--duration) ease-in-out infinite; opacity: 0.3; }
         @keyframes twinkle { 0%, 100% { opacity: 0.2; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.2); } }
         .cursor-blink { display: inline-block; width: 8px; height: 16px; background-color: #fff; margin-left: 4px; animation: blink 1s step-end infinite; vertical-align: middle; }
@@ -64,10 +59,15 @@
 
     <div class="bg-animate" id="star-layer"></div>
 
+    <!-- 메인 콘솔 바디 -->
     <div class="relative z-10 w-full max-w-md p-6 flex flex-col my-4 rounded-[45px] console-body mx-auto">
+        
+        <!-- 게임 화면 영역 -->
         <div class="game-screen w-full aspect-video mb-6 relative overflow-hidden screen-glass">
             <div class="scanlines"></div>
+            <!-- 유튜브 영상이 들어갈 자리 -->
             <div id="header-video-container" class="absolute inset-0 w-full h-full bg-black z-0 opacity-80"></div>
+
             <div class="absolute inset-0 flex flex-col items-center justify-start pt-6 z-20 pointer-events-none">
                 <h1 class="text-2xl font-pixel text-white text-outline tracking-tighter drop-shadow-lg transform -rotate-1">
                     Every Random DAY6
@@ -78,18 +78,19 @@
             </div>
         </div>
 
+        <!-- 대화창/로딩창 영역 -->
         <div id="interaction-area" class="flex flex-col items-center justify-center min-h-[160px] mb-6 relative px-1">
             <div id="loading-state" class="hidden text-center text-white font-jua py-6">
-                <i data-lucide="refresh-cw" class="w-10 h-10 animate-spin mb-4 mx-auto text-yellow-400"></i>
-                <p class="text-sm mb-1">오늘의 데이식스 한 줄을 불러오는 중...</p>
-                <p class="text-[10px] opacity-70 animate-pulse">잠시 후 음악이 재생됩니다</p>
+                <i data-lucide="music" class="w-10 h-10 animate-bounce mb-4 mx-auto text-yellow-400"></i>
+                <p class="text-sm mb-1">행복을 불러오는 중...</p>
+                <p class="text-[10px] opacity-70 animate-pulse">DAY6의 음악이 곧 시작됩니다</p>
             </div>
 
             <div id="result-state" class="w-full flex flex-col items-center animate-fade-in-up">
                 <div class="game-chat-box w-full">
                     <div class="chat-name-tag font-jua" id="result-speaker-label">DAY6</div>
                     <div class="text-white text-xl leading-relaxed break-keep font-gamja" id="result-text-container">
-                        <span id="result-text">버튼을 눌러보세요</span>
+                        <span id="result-text">버튼을 눌러 시작하세요!</span>
                         <span class="cursor-blink"></span>
                     </div>
                     <div class="absolute bottom-2 right-3">
@@ -99,15 +100,26 @@
             </div>
         </div>
 
+        <!-- 하단 컨트롤러 -->
         <div class="grid grid-cols-2 gap-4 mt-auto z-10">
+            <!-- 서브 스크린 (GIF 영역) -->
             <div class="flex flex-col items-center justify-center">
-                <div class="sub-screen screen-glass">
+                <div class="sub-screen screen-glass relative">
                     <div class="scanlines"></div>
-                    <img id="result-gif" src="" alt="" class="w-full h-full object-cover pixelated animate-fade-in-up">
+                    <!-- GIF 로더 아이콘 -->
+                    <div id="gif-loader" class="absolute inset-0 flex items-center justify-center z-20">
+                        <i data-lucide="loader-2" class="w-8 h-8 text-white animate-spin opacity-50"></i>
+                    </div>
+                    <img id="result-gif" src="" alt="" class="w-full h-full object-cover pixelated animate-fade-in-up hidden z-10">
+                    <!-- GIF 에러 시 보여줄 아이콘 -->
+                    <div id="gif-error" class="hidden flex flex-col items-center">
+                        <i data-lucide="image-off" class="w-6 h-6 text-gray-500"></i>
+                    </div>
                 </div>
                 <span class="text-[8px] font-pixel mt-2 text-[#5D4037] font-bold">Random_Denimalz</span>
             </div>
 
+            <!-- 버튼들 -->
             <div class="flex items-center justify-end gap-6 transform rotate-[-5deg] pr-2">
                 <div class="flex flex-col items-center">
                     <button id="play-pause-btn" class="w-14 h-14 rounded-full action-button flex items-center justify-center text-white">
@@ -125,7 +137,7 @@
         </div>
     </div>
 
-    <!-- 미니 플레이어 -->
+    <!-- 미니 플레이어 (상단 고정 가능) -->
     <div id="mini-player" class="fixed bottom-6 z-50 w-full max-w-sm px-4 left-1/2 -translate-x-1/2">
         <div class="bg-[#FFF8E7] rounded-xl border-2 border-[#5D4037] p-3 shadow-2xl flex items-center justify-between">
             <div class="flex items-center gap-3 overflow-hidden text-left">
@@ -134,2269 +146,222 @@
                     <i data-lucide="disc-3" class="w-6 h-6 absolute opacity-20"></i>
                 </div>
                 <div class="flex flex-col overflow-hidden font-jua">
-                    <span id="player-song" class="text-sm font-bold text-[#5D4037] truncate">대기 중...</span>
-                    <span id="player-status" class="text-[11px] text-[#8D6E63] truncate flex items-center gap-1">
-                        음악을 선택해주세요 (❁´◡`❁)
+                    <span id="player-song" class="text-sm font-bold text-[#5D4037] truncate">준비 중...</span>
+                    <span class="text-[11px] text-[#8D6E63] truncate flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 bg-[#84CC16] rounded-full animate-pulse"></span>
+                        행복 재생 중 (❁´◡`❁)
                     </span>
                 </div>
             </div>
-            <div id="air-tag" class="bg-gray-400 text-white px-2 py-0.5 text-[8px] font-pixel rounded shadow-sm">OFF</div>
+            <div id="air-tag" class="bg-[#5D4037] text-white px-2 py-0.5 text-[8px] font-pixel rounded animate-pulse shadow-sm">ON_AIR</div>
         </div>
     </div>
 
     <script>
+    // --- 글로벌 변수 및 데이터 ---
+    let player;
+    let isAnimating = false;
+    let isPlaying = false;
+    let currentVideoId = null;
+    let autoPlayTried = false;
+
+    const songUrlMap = {
+        "한 페이지가 될 수 있게": "iQBOu81LkT0",
+        "Best Part": "a-UfQfufkgU",
+        "행운을 빌어 줘": "hrXCP0xeoA8",
+        "Sweet Chaos": "hoKz_O4OmCA",
+        "Welcome to the Show": "AHy7z1ABnZE",
+        "녹아내려요": "KlpSc6Jvci8",
+        "Zombie": "k8gx-C7GCGU",
+        "예뻤어": "BS7tz2rAOSA",
+        "좋아합니다": "daoMYJv8i0c",
+        "그렇더라고요": "F3lki7udJU0",
+        "장난 아닌데": "ZmHQbzbM8pI",
+        "Congratulations": "Pp8Bza15AWY",
+        "Shoot Me": "g25qt2v_bII"
+    };
+
+    const lyricsData = [
+        { "text": "아름다운 청춘의 한 장 함께 써내려 가자", "song": "한 페이지가 될 수 있게", "artist": "DAY6", "album": "The Book of Us : Gravity" },
+        { "text": "나에게 쥐어지는 매일이 Gonna be my Best part", "song": "Best Part", "artist": "DAY6", "album": "The Book of Us : Gravity" },
+        { "text": "아무쪼록 행운을 빌어 줘 내 앞길에 행복을 빌어 줘", "song": "행운을 빌어 줘", "artist": "원필", "album": "Pilmography" },
+        { "text": "내가 살아있다는 게 두렵고 버겁긴 하지만 견딜 수 있어", "song": "Zombie", "artist": "DAY6", "album": "The Book of Us : The Demon" },
+        { "text": "어디에도 없는 널 어디서든 난 느껴", "song": "예뻤어", "artist": "DAY6", "album": "Every DAY6 February" }
+    ];
+
+    // 유튜브 API 준비 완료 시 자동 호출
+    function onYouTubeIframeAPIReady() {
+        player = new YT.Player('header-video-container', {
+            height: '100%',
+            width: '100%',
+            videoId: 'iQBOu81LkT0', // 초기 기본값
+            playerVars: {
+                'autoplay': 1,
+                'controls': 0,
+                'rel': 0,
+                'modestbranding': 1,
+                'loop': 1,
+                'playlist': 'iQBOu81LkT0',
+                'mute': 0,
+                'enablejsapi': 1
+            },
+            events: {
+                'onReady': onPlayerReady,
+                'onStateChange': onPlayerStateChange
+            }
+        });
+    }
+
+    function onPlayerReady(event) {
+        // 첫 진입 시 바로 하나 뽑기 시도
+        if (!autoPlayTried) {
+            drawFortune();
+            autoPlayTried = true;
+        }
+    }
+
+    function onPlayerStateChange(event) {
+        // 영상이 끝났을 때 다시 루프시키거나 처리
+        if (event.data === YT.PlayerState.PLAYING) {
+            isPlaying = true;
+            updateControls(true);
+        } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.BUFFERING) {
+            // 버퍼링 시에도 일시정지 모양으로 보이지 않게 하려면 여기 로직 조정 가능
+        }
+    }
+
+    // --- 핵심 기능 함수 ---
+
+    function drawFortune() {
+        if (isAnimating) return;
+        isAnimating = true;
+
+        const loadingState = document.getElementById('loading-state');
+        const resultState = document.getElementById('result-state');
+        const resultGif = document.getElementById('result-gif');
+        const gifLoader = document.getElementById('gif-loader');
+        const gifError = document.getElementById('gif-error');
+
+        resultState.classList.add('hidden');
+        loadingState.classList.remove('hidden');
+
+        // GIF 상태 초기화 (로더 보여주기)
+        resultGif.classList.add('hidden');
+        gifLoader.classList.remove('hidden');
+        gifError.classList.add('hidden');
+        
+        const randomLyric = lyricsData[Math.floor(Math.random() * lyricsData.length)];
+        const videoId = songUrlMap[randomLyric.song] || "iQBOu81LkT0";
+        currentVideoId = videoId;
+
+        // GIF 랜덤 선택 및 로딩 핸들러
+        const randomGifNum = Math.floor(Math.random() * 40) + 1;
+        resultGif.src = `<img src="${gifNum}.gif"
+        
+        resultGif.onload = () => {
+            gifLoader.classList.add('hidden');
+            resultGif.classList.remove('hidden');
+        };
+        resultGif.onerror = () => {
+            gifLoader.classList.add('hidden');
+            gifError.classList.remove('hidden');
+        };
+
+        // 데이터 텍스트 업데이트
+        document.getElementById('result-text').innerText = `"${randomLyric.text}"`;
+        document.getElementById('result-speaker-label').innerText = `${randomLyric.artist} | ${randomLyric.album}`;
+        document.getElementById('player-song').innerText = randomLyric.song;
+
+        // 유튜브 영상 변경
+        if (player && player.loadVideoById) {
+            player.loadVideoById({ videoId: videoId });
+            player.playVideo(); // 명시적 재생 명령
+        }
+
+        setTimeout(() => {
+            loadingState.classList.add('hidden');
+            resultState.classList.remove('hidden');
+            isAnimating = false;
+        }, 1200);
+    }
+
+    function togglePlay() {
+        if (!player || !currentVideoId) return;
+        
+        if (isPlaying) {
+            player.pauseVideo();
+            isPlaying = false;
+        } else {
+            player.playVideo();
+            isPlaying = true;
+        }
+        updateControls(isPlaying);
+    }
+
+    function updateControls(playing) {
+        const shape = document.getElementById('play-pause-shape');
+        const playerIcon = document.getElementById('player-icon-container');
+        const airTag = document.getElementById('air-tag');
+
+        if (playing) {
+            shape.className = 'pause-mode';
+            playerIcon.classList.add('animate-cd');
+            airTag.innerText = "ON_AIR";
+            airTag.classList.add('bg-green-500');
+            airTag.classList.remove('bg-red-500');
+        } else {
+            shape.className = 'play-mode';
+            playerIcon.classList.remove('animate-cd');
+            airTag.innerText = "PAUSED";
+            airTag.classList.remove('bg-green-500');
+            airTag.classList.add('bg-red-500');
+        }
+    }
+
+    // --- 이벤트 리스너 ---
+
     document.addEventListener('DOMContentLoaded', function() {
         lucide.createIcons();
 
         // 별 배경 생성
         const starLayer = document.getElementById('star-layer');
-        if (starLayer) {
-            for (let i = 0; i < 40; i++) {
-                const star = document.createElement('div');
-                star.className = 'star';
-                const size = Math.random() * 4 + 2;
-                star.style.width = size + 'px'; star.style.height = size + 'px';
-                star.style.left = Math.random() * 100 + 'vw'; star.style.top = Math.random() * 100 + 'vh';
-                star.style.setProperty('--duration', (Math.random() * 3 + 2) + 's');
-                starLayer.appendChild(star);
+        for (let i = 0; i < 40; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            const size = Math.random() * 4 + 2;
+            star.style.width = size + 'px'; star.style.height = size + 'px';
+            star.style.left = Math.random() * 100 + 'vw'; star.style.top = Math.random() * 100 + 'vh';
+            star.style.setProperty('--duration', (Math.random() * 3 + 2) + 's');
+            starLayer.appendChild(star);
+        }
+
+        document.getElementById('draw-btn').addEventListener('click', drawFortune);
+        document.getElementById('play-pause-btn').addEventListener('click', togglePlay);
+
+        // 브라우저 자동 재생 정책 대응: 
+        // 사용자가 "최초의 아무 곳이나 클릭"하는 순간, 영상이 멈춰있다면(차단되었다면) 다시 재생 시도
+        window.addEventListener('click', () => {
+            if (player && player.getPlayerState) {
+                const state = player.getPlayerState();
+                // 5: 큐에 대기 중, 2: 일시정지, -1: 시작 안 됨
+                if (state !== YT.PlayerState.PLAYING) {
+                    player.playVideo();
+                }
             }
-        }
+        }, { once: true });
+    });
 
-        const songUrlMap = {
-                      "한 페이지가 될 수 있게": "https://youtu.be/iQBOu81LkT0?si=hhD46vLrVNGHlhHj",
-            "Best Part": "https://youtu.be/a-UfQfufkgU?si=w9aejI5CRqKggjYb",
-            "행운을 빌어 줘": "https://youtu.be/hrXCP0xeoA8?si=OyYOG2earR7aeDBh",
-            "문득": "https://youtu.be/8xg7h1OTrsc?si=Eefh_Ojf3NZ4aK4Y",
-            "My Way": "https://youtu.be/G45bO2CYba0?si=GZc4KHJt0-j-Y3Eu",
-            "날아라! 드림라이더": "https://youtu.be/CYj8d_2eD3U?si=yAlcqFt8KvLp2DKP",
-            "꿈의 버스": "https://youtu.be/hZ6pts6e8dI?list=OLAK5uy_nJSgUuANm4aVAPhisS6MdUk1ZaZDdeU8s&t=31",
-            "망겜 (Shxtty Game)": "https://youtu.be/mqxDy2_GVLU?si=2IFCNMYpeOnDmT8D",
-            "Counter": "https://youtu.be/B9vB01PEnzE?si=zuvkW-L-kG3wTHMY",
-            "Dance Dance": "https://youtu.be/uPo7yoCSbI4?si=8eqBn530DlVHH1Ra",
-            "Free하게": "https://youtu.be/SujoDZYCMCs?si=WZluFQcAzgqrG9gy",
-            "For Me": "https://youtu.be/UTmMpCBsF8Y?si=bGX06p_YvBeNujDf",
-            "EASY": "https://youtu.be/0kZABfrug1o?si=i6Ra4fPCX8pPnkYs",
-            "드디어 끝나갑니다": "https://youtu.be/t5vHBX07Qb4?si=y8_CjS09pG_Y8xGH",
-            "녹아내려요": "https://youtu.be/KlpSc6Jvci8?si=9Zgcxvdj6nQDrHTQ",
-            "let it be summer": "https://youtu.be/uTxtBbO8Psw?si=XHI6TRS5YD8DivTE",
-            "꿈꾼 (Dreamer)": "https://youtu.be/ccKikk71rtM?si=VlDpFIeer_19zdbU",
-            "You make Me": "https://youtu.be/ZbcTTMtAe48?si=2TMQ-BFp0yYSwxyb",
-            "playground": "https://youtu.be/RB0DwJxtyp8?si=bXgSvVuzC5y1m6BX",
-            "안녕, 잘 가": "https://youtu.be/rUfvHFsxxTA?si=6EhvqT_Hud5d9bAI",
-            "행복했던 날들이었다": "https://youtu.be/okKTpSnwpQA?si=c9AGOjYhelibje_B",
-            "Marathon": "https://youtu.be/ClwEVvUgxEE?si=jiJ2n4J4E7F27mWQ",
-            "I'm Fine": "https://youtu.be/TzC7Tsd6eBw?si=FworhlxrnmS5_Qb1",
-            "동화 속 아이처럼": "https://youtu.be/S2SuL7jfSDk?si=ZrVx7ge5bG-LkbG7",
-            "좋아합니다": "https://youtu.be/daoMYJv8i0c?si=nL-w5OHUPi1NPoZO",
-            "그렇더라고요": "https://youtu.be/F3lki7udJU0?si=wNEMBmSjssCIsTnb",
-            "노력해볼게요": "https://youtu.be/BpfbDvGpm7c?si=kFKkJn9M4p-3qP-r",
-            "둘도 아닌 하나": "https://youtu.be/HIDranJqHLQ?si=guTyxn_tXp46F_9G",
-            "Beautiful Feeling": "https://youtu.be/EJOk3VsupUA?si=AbdAozV_KvSGmXAj",
-            "Man in a movie": "https://youtu.be/nU2ESuG0SLk?si=lrfwVA7LO736i74Z",
-            "예뻤어": "https://youtu.be/BS7tz2rAOSA?si=WAehLBHGmmUkEmOG",
-            "사랑, 이게 맞나 봐": "https://youtu.be/k1SaWQO0_fM?si=p7soCEuO5VO-v71n",
-            "natural": "https://youtu.be/xn-X1yjM0kQ?si=AtoExC-uPe-vimr2",
-            "Love me or Leave me": "https://youtu.be/LlFcvjDBSCU?si=aL1z2B1UoM5E1KHo",
-            "그게 너의 사랑인지 몰랐어": "https://youtu.be/1SUou1akUfM?si=tg-4wgvadhE_nQL0",
-            "want to love you": "https://youtu.be/Er0VxHCsxDc?si=RLB-MEAvWyPNgRr4",
-            "해야 뜨지 말아 줘": "https://youtu.be/Lp4x8WsGwCo?si=51UYNnXpkEhpEg7b",
-            "Finale": "https://youtu.be/1ZrX9ytcm4A?si=NZZbgoKWq639XbIC",
-            "INSIDE OUT": "https://youtu.be/VEDkhmvjHcY?si=EE1LahNf3qshw7BZ",
-            "Take All My Heart": "https://youtu.be/IXBQiT2FMb0?si=gcEnVUUFYdtQi-hr",
-            "1 to 10": "https://youtu.be/0an2t_97iCA?si=cHp3A-e_2cN3GbQ-",
-            "Chocolate": "https://youtu.be/-VvIYhepewA?si=aIiVN65LvWVdzlPN",
-            "우리 앞으로 더 사랑하자": "https://youtu.be/iM8U6n1hyK8?si=fcj8LnwM9oKh5DUG",
-            "아직 거기 살아": "https://youtu.be/KzXkHD3W7Pk?si=qTuHoiKW0u9NRvFF",
-            "Sing Me": "https://youtu.be/PO2VvKdqusw?si=9sudT1_sHc9ZWH3p",
-            "君なら(너라면)": "https://youtu.be/S3XTnEcLFnA?si=pq58Px1SX7D4ePFZ",
-            "If ~また逢えたら~": "https://youtu.be/unS_PcMn3RA?si=H-NJahillnyWOV90",
-            "Baby, it's okay": "https://youtu.be/oMUM66njZO8?si=2YbEZuGZFHFmhq-F",
-            "파도가 끝나는 곳까지": "https://youtu.be/_NmzMzjoJyk?si=Zrx0Kmgd5-taBrZ2",
-            "everyday we fight": "https://youtu.be/a1icUrWPUD4?si=k7fWs8Q70Ly_xKlR",
-            "사랑하게 해주라": "https://youtu.be/0JC4cm2fXsc?si=Oi-EwJKW3yXu8IGX",
-            "어디에도 없는 널": "https://youtu.be/GjxHiJnsePs?si=zhCavSqjKnIM1Ai9",
-            "You Wake Me Up": "https://youtu.be/HwcCBnfhsR4?si=us3FHgDu7s6UftcL",
-            "Zombie": "https://youtu.be/k8gx-C7GCGU?si=AjGo1oKrt_riWvCZ",
-            "Healer": "https://youtu.be/TBowwhu8GHk?si=5tnWS2KNVp14Kho0",
-            "잘 자라 내 사람아": "https://youtu.be/okVE_p9BAFM?si=pryM2CeJoxQX4Nc3",
-            "언젠가 봄은 찾아올 거야": "https://youtu.be/RJyWFx1gjA4?si=jGDTpkrN4sLnn8Zz",
-            "나무는 결국 겨울을 견뎌낼 거야": "https://youtu.be/_iyL9y-SI6E?si=_GZ4FB1fJT8vKhNj",
-            "아무것도 안 하고 싶다": "https://youtu.be/-hb22SIK8mM?si=48419oN4IPcwn3rN",
-            "Afraid": "https://youtu.be/RKJvo6fAMmg?si=DwlqXk-Ntcj_wELG",
-            "포장": "https://youtu.be/Bfxgv1a0Ffk?si=tNuY0MvxwZWrHUmi",
-            "나 홀로 집에": "https://youtu.be/gziLoBRf8Ho?si=5Rqewrh6Nio9GzQW",
-            "구름 위에서": "https://youtu.be/jTwJfDI0ePc?si=_-y75NNTzcqhkPn5",
-            "Check Pattern": "https://youtu.be/3qcX_kz84bo?si=TBspAzO3hnQpcdwt",
-            "끝까지 안아 줄게": "https://youtu.be/tLcynwlNh38?si=-4eNUD6Fz78L8sQk",
-            "아픈 길": "https://youtu.be/PAE88urB1xs?si=jF1YIOvY1-bhHzE2",
-            "아 왜": "https://youtu.be/bcN101tdUsE?si=yzWgs-q_xZUw8vxQ",
-            "오늘은 내게": "https://youtu.be/v13D8TCmvBQ?si=QNhsVBUULuV9kGea",
-            "겨울이 간다": "https://youtu.be/ythA128geTE?si=rNK3GiQWUKzWTpHz",
-            "괴물": "https://youtu.be/47OLnr_hYFc?si=9RhzEEqUZ6t8iqDX",
-            "누군가 필요해": "https://youtu.be/bk-zK33vxWA?si=XB725pdpr1yuiTTg",
-            "Shoot Me": "https://www.youtube.com/embed/g25qt2v_bII",
-            "Congratulations": "https://youtu.be/Pp8Bza15AWY?si=PmzKB5xQXyH2jFxQ",
-            "Welcome to the Show": "https://youtu.be/AHy7z1ABnZE?si=WVQBASnDgrnjGAkh",
-            "무적": "https://youtu.be/aoTdW4GLtIQ?si=Mq3L-ftu1kJPu0Tc",
-            "원하니까": "https://youtu.be/4aPuslJEjnY?si=T6Xq_CEDTMaD5vn2",
-            "메이플라떼": "https://youtu.be/HUTOzH05XmE?si=t47EsSfGWLZp9XQ8",
-            "우린": "https://youtu.be/7mdHYSX7jbU?si=Vy4GsxrYkFKaAyZb",
-            "Maybe Tomorrow": "https://youtu.be/LbQCFWB_8S0?si=eyKe5MIy1Uf9zSbX",
-            "우리의 계절": "https://youtu.be/eN8Fl7_9SnQ?si=n2OkjN4AZqJVD3Hz",
-            "땡스 투": "https://youtu.be/-e7mCnwTXqI?si=NCUIegt6fXA3hk6Q",
-            "그녀가 웃었다": "https://youtu.be/09ig852MsMg?si=F48wzRZNflOFZf5M",
-            "How to love": "https://youtu.be/qCZm8abq8Co?si=Pgc8twrphH5gQtP5",
-            "역대급 (WALK)": "https://youtu.be/MNZEBpB0Ub8?si=RQABRGpF0xLBYtaz",
-            "별들 앞에서 Before the Stars": "https://youtu.be/2fKmtgIseZE?si=2-I7jdMLVsh9oQ79",
-            "Disco Day": "https://youtu.be/uQrCIR5aSto?si=U7uejNC7KtoDjje-",
-            "바래 Wish": "https://youtu.be/nYf1adRyd0w?si=b4YOs-9gej0QQq2H",
-            "어쩌다 보니": "https://youtu.be/S8bQtknSNW0?si=6D0hZm48tA0Wa7bj",
-            "남겨둘게": "https://youtu.be/4DSuRqiK9gk?si=wDkmCTd_sM7G22vG",
-            "장난 아닌데": "https://youtu.be/ZmHQbzbM8pI?si=rNRj6wj-ekamhaE3",
-            "Better Better": "https://youtu.be/kQBAEEWwRgo?si=VcgpGhqac1MmirmT",
-            "The Power of Love": "https://youtu.be/dRF_NIsIoUs?si=kPmYQ0Tka394GU7D",
-"버릇이 됐어": "https://youtu.be/w9m-nIzmS3Y?si=R6pwirX57ZknnSq-",
-"365247": "https://youtu.be/HnQNNoA5abk?si=h50Snz1tp0IkSOB-",
-"태양처럼": "https://youtu.be/h7cWseDQ4to?si=0faErqmdc7ANundK",
-"좋은걸 뭐 어떡해": "https://www.youtube.com/watch?v=MZLrO_jQe1E&list=RDh7cWseDQ4to&index=2",
-"LOVE PARADE": "https://www.youtube.com/watch?v=MZLrO_jQe1E&list=RDh7cWseDQ4to&index=2",
-"네가 원했던 것들": "https://youtu.be/ydiDa8tvtvY?list=OLAK5uy_mqzyh1i_3lxax1pNouvWwttkAh5xeUwGw",
-"비극의 결말에서": "https://youtu.be/5PrhMHtqxZ4?list=OLAK5uy_mqzyh1i_3lxax1pNouvWwttkAh5xeUwGw",
-"그렇게 너에게 도착하였다": "https://youtu.be/60gfqmzjz64?list=RD60gfqmzjz64",
-"Rescue Me": "https://youtu.be/WWZPYxb6fRo?list=RDWWZPYxb6fRo",
-"EMERGENCY": "https://youtu.be/zOEng_czoi0?list=RDzOEng_czoi0",
-"도와줘요 Rock&Roll": "https://youtu.be/DNfTdzVOHhg?list=RDzOEng_czoi0",
-"널 제외한 나의 뇌": "https://youtu.be/Z3ji8GrPSik?list=RDZ3ji8GrPSik",
-"때려쳐": "https://youtu.be/I1nGGToyte8?list=RDI1nGGToyte8",
-"마치 흘러가는 바람처럼": "https://youtu.be/1I9QCUwga20?list=RD1I9QCUwga20",
-"아야야": "https://youtu.be/ivVyNYbtX90?list=RDivVyNYbtX90",
-"잘 자라 내 사람아": "https://youtu.be/QYCuVkHePmc?si=reMcaMUSlq5-0I4E",
-"Deep in love": "https://youtu.be/239JmWPzMu0?list=RD239JmWPzMu0",
-"Lovin′ the Christmas": "https://youtu.be/R856GYdEcPg?si=ZzbeHCaWCJizW9OZ",
-"Not Fine": "https://youtu.be/nxkqtyzesBU?list=RDnxkqtyzesBU",
-"Not Mine": "https://youtu.be/OvQslUZacec",
-"Say Wow": "https://youtu.be/8meVwcHtoQk?list=RD8meVwcHtoQk",
-"Sweet Chaos": "https://youtu.be/hoKz_O4OmCA?list=RDhoKz_O4OmCA",
-"Tick Tock": "https://youtu.be/L6obEteHeLM?list=RDL6obEteHeLM",
-        };
-
-        const lyricsData = [
-       
-  {
-    "text": "낮이 밝아도 아무 문제없어 커튼은 언제라도 칠 수 있으니까 걱정 마",
-    "song": "365247",
-    "artist": "DAY6",
-    "album": "The Book of Us : Entropy"
-  },
-  {
-    "text": "다시 새벽 노을이 찾아올 때까지 We get it on",
-    "song": "365247",
-    "artist": "DAY6",
-    "album": "The Book of Us : Entropy"
-  },
-  {
-    "text": "Ye we jumping into fire 갈수록 뜨거워져 데이더라도 손을 놓지 마",
-    "song": "365247",
-    "artist": "DAY6",
-    "album": "The Book of Us : Entropy"
-  },
-  {
-    "text": "듣고 싶은 말 갖고 싶은 것 다 널 위해 해주고 싶어",
-    "song": "1 to 10",
-    "artist": "DAY6",
-    "album": "The Book of Us : The Demon"
-  },
-  {
-    "text": "원하는 건 다 줄게 I’ll give it all give it all for you",
-    "song": "1 to 10",
-    "artist": "DAY6",
-    "album": "The Book of Us : The Demon"
-  },
-  {
-    "text": "힘들 때 단지 괜찮을 거란 말은 난 싫어해 니 곁에서 고민해 줄게",
-    "song": "1 to 10",
-    "artist": "DAY6",
-    "album": "The Book of Us : The Demon"
-  },
-  {
-    "text": "이걸로 된 거야 이미 끝난걸 다 알아 나 전부 다 알아 나 이젠",
-    "song": "겨울이 간다",
-    "artist": "DAY6",
-    "album": "Every DAY6 January"
-  },
-  {
-    "text": "나 또한 사랑을 알고 눈물을 흘리기도 하는 그런 존재야",
-    "song": "괴물",
-    "artist": "DAY6",
-    "album": "Band Aid"
-  },
-  {
-    "text": "진절머리가 나는 고독함 손을 내밀어 줘 그 순간 그대로 무너져 내릴 거야",
-    "song": "괴물",
-    "artist": "DAY6",
-    "album": "Band Aid"
-  },
-  {
-    "text": "행복하게 지내 구름 위에서",
-    "song": "구름 위에서",
-    "artist": "DAY6",
-    "album": "The Book of Us : Negentropy"
-  },
-  {
-    "text": "더는 아프지 말고 웃으며",
-    "song": "구름 위에서",
-    "artist": "DAY6",
-    "album": "The Book of Us : Negentropy"
-  },
-  {
-    "text": "요즘도 넌 곧잘 웃니 난 그리워 너의 환한 미소가",
-    "song": "그게 너의 사랑인지 몰랐어",
-    "artist": "DAY6",
-    "album": "Fourever"
-  },
-  {
-    "text": "장난으로 넘겼던 그 고백도 그땐 그게 사랑인 줄 나는 몰랐어",
-    "song": "그게 너의 사랑인지 몰랐어",
-    "artist": "DAY6",
-    "album": "Fourever"
-  },
-  {
-    "text": "이제서야 조금은 알 것 같아 전하려던 마음을 네가 원한 대답을",
-    "song": "그게 너의 사랑인지 몰랐어",
-    "artist": "DAY6",
-    "album": "Fourever"
-  },
-  {
-    "text": "내게 그대로 그대로 품에 들어와 고갤 끄덕여 줘",
-    "song": "그녀가 웃었다",
-    "artist": "DAY6",
-    "album": "Band Aid"
-  },
-  {
-    "text": "내게 조금 더 조금 더 가까이 와 봐",
-    "song": "그녀가 웃었다",
-    "artist": "DAY6",
-    "album": "Band Aid"
-  },
-  {
-    "text": "수많은 별들이 한없이 쏟아지던 가을밤 수줍게 뱉은 널 좋아해",
-    "song": "그녀가 웃었다",
-    "artist": "DAY6",
-    "album": "Band Aid"
-  },
-  {
-    "text": "웃는데 왜 아프죠 좋은데 왜 아리죠 그대의 따뜻한 품속에 있는데",
-    "song": "그렇게 너에게 도착하였다",
-    "artist": "DAY6 (Even of Day)",
-    "album": "The Book of Us : Gluon"
-  },
-  {
-    "text": "돌아올 수 있는 곳 다시 찾고 싶은 곳 여기서 시작을 맞을래",
-    "song": "그렇게 너에게 도착하였다",
-    "artist": "DAY6 (Even of Day)",
-    "album": "The Book of Us : Gluon"
-  },
-  {
-    "text": "지금 여기 니가 주는 이 느낌 사랑일 수 있을 것 같아",
-    "song": "그렇게 너에게 도착하였다",
-    "artist": "DAY6 (Even of Day)",
-    "album": "The Book of Us : Gluon"
-  },
-  {
-    "text": "대신 울어주고 싶고 내가 대신 아파해 주고 싶어요",
-    "song": "그렇더라고요",
-    "artist": "DAY6",
-    "album": "Every DAY6 October"
-  },
-  {
-    "text": "다신 그대의 마음에 상처가 나지 않았으면 해요",
-    "song": "그렇더라고요",
-    "artist": "DAY6",
-    "album": "Every DAY6 October"
-  },
-  {
-    "text": "누군가를 넘치게 좋아한다는 건 참 신기하게도 그렇더라고요",
-    "song": "그렇더라고요",
-    "artist": "DAY6",
-    "album": "Every DAY6 October"
-  },
-  {
-    "text": "This is a song for you I’m singing for you 내 모든 걸 다 줄게",
-    "song": "그렇더라고요",
-    "artist": "DAY6",
-    "album": "Every DAY6 October"
-  },
-  {
-    "text": "그대에게 있어 난 안식처이길 바라요 바쁜 하루 중에도 날 떠올리면 편안해질 수 있게",
-    "song": "그렇더라고요",
-    "artist": "DAY6",
-    "album": "Every DAY6 October"
-  },
-  {
-    "text": "But I'm not down I'll never go down 아직은 난 안 끝났다",
-    "song": "꿈꾼 (Dreamer)",
-    "artist": "Young K",
-    "album": "Letters with notes"
-  },
-  {
-    "text": "위로받기보단 가고 싶다 질투하기보단 받고 싶다",
-    "song": "꿈꾼 (Dreamer)",
-    "artist": "Young K",
-    "album": "Letters with notes"
-  },
-  {
-    "text": "I'm still not down I'll never go down 불가능의 '불'을 태운다",
-    "song": "꿈꾼 (Dreamer)",
-    "artist": "Young K",
-    "album": "Letters with notes"
-  },
-  {
-    "text": "뒤져도 낭만 없는 밤하늘에 나의 별들을 찍는다",
-    "song": "꿈꾼 (Dreamer)",
-    "artist": "Young K",
-    "album": "Letters with notes"
-  },
-  {
-    "text": "저… 혹시 꿈을 찾고 있나요? 아니면 접고 있나요 난 계속 꿈을 꿔요",
-    "song": "꿈의 버스",
-    "artist": "DAY6",
-    "album": "The DECADE"
-  },
-  {
-    "text": "흔들려도 비틀대도 꿈을 놓지 않을 거예요",
-    "song": "꿈의 버스",
-    "artist": "DAY6",
-    "album": "The DECADE"
-  },
-  {
-    "text": "도착할 그곳에 있는 날 상상해 꿈을 놓지 않을 거예요",
-    "song": "꿈의 버스",
-    "artist": "DAY6",
-    "album": "The DECADE"
-  },
-  {
-    "text": "언젠간 상처만 남는다 해도 난 끝까지 안아 줄게",
-    "song": "끝까지 안아 줄게",
-    "artist": "Young K",
-    "album": "Eternal"
-  },
-  {
-    "text": "흠집 하나 안 나게 I’ll hold you 내 모든 게 다 망가져도 I’ll guard you",
-    "song": "끝까지 안아 줄게",
-    "artist": "Young K",
-    "album": "Eternal"
-  },
-  {
-    "text": "빛이 다 사라져 가도 바닥까지 내려가도 절망 속에 잠겨 가도 끝까지 안아 줄게 난",
-    "song": "끝까지 안아 줄게",
-    "artist": "Young K",
-    "album": "Eternal"
-  },
-  {
-    "text": "네가 없어도 난 너무 행복해 상관없어 내가 가장 소중해",
-    "song": "나 홀로 집에",
-    "artist": "DAY6 (Even of Day)",
-    "album": "Right Through Me"
-  },
-  {
-    "text": "하고 싶은 거 다 하며 살 거야 내게 아쉬운 거 하나도 없이",
-    "song": "나 홀로 집에",
-    "artist": "DAY6 (Even of Day)",
-    "album": "Right Through Me"
-  },
-  {
-    "text": "봄을 맞이하면 보낼 눈 덕에 또 싹이 트고 꽃이 필 걸 언제나 그렇듯",
-    "song": "나무는 결국 겨울을 견뎌낼 거야",
-    "artist": "성진",
-    "album": "30"
-  },
-  {
-    "text": "그가 벌려놓은 흙 틈새로 내 뿌리는 더 깊게 내려 언제나 그랬듯",
-    "song": "나무는 결국 겨울을 견뎌낼 거야",
-    "artist": "성진",
-    "album": "30"
-  },
-  {
-    "text": "꿈에 그려왔던, 계속 기다렸던 그게 오늘이야",
-    "song": "날아라! 드림라이더",
-    "artist": "DAY6",
-    "album": "The DECADE"
-  },
-  {
-    "text": "모두 믿지 않던, 나만 믿고 있던 나의 반전이야",
-    "song": "날아라! 드림라이더",
-    "artist": "DAY6",
-    "album": "The DECADE"
-  },
-  {
-    "text": "불을 뿜어 대는 드림라이더 꿈과 희망이여 솟구쳐 하늘로",
-    "song": "날아라! 드림라이더",
-    "artist": "DAY6",
-    "album": "The DECADE"
-  },
-  {
-    "text": "누가 뭐래도 Do it Gonna show and prove it 여태 쌓아 왔지 내 전부를 로켓에 담아",
-    "song": "날아라! 드림라이더",
-    "artist": "DAY6",
-    "album": "The DECADE"
-  },
-  {
-    "text": "사랑했었다는 사실만이라도 아무리 오랜 시간이 지나도 남겨둘게",
-    "song": "남겨둘게",
-    "artist": "DAY6",
-    "album": "Every DAY6 September"
-  },
-  {
-    "text": "함께했었다는 사실만이라도 가슴 깊은 곳 한쪽 구석에 널 남겨둘게",
-    "song": "남겨둘게",
-    "artist": "DAY6",
-    "album": "Every DAY6 September"
-  },
-  {
-    "text": "하루만 잠시만 잔상이 걷힌다면 비로소 보일 텐데",
-    "song": "널 제외한 나의 뇌",
-    "artist": "DAY9",
-    "album": "Fourever"
-  },
-  {
-    "text": "하루만 잠시만 지울 수 있다면 내 세상은 더 아름다울 것 같은데",
-    "song": "널 제외한 나의 뇌",
-    "artist": "DAY9",
-    "album": "Fourever"
-  },
-  {
-    "text": "빨리 달려줘 시간아 저 멀리 점이 될 때까지",
-    "song": "널 제외한 나의 뇌",
-    "artist": "DAY9",
-    "album": "Fourever"
-  },
-  {
-    "text": "조금만 빨리 알았다면 알아차렸다면 난 네가 원했던 꽃 한 송일 줬을까",
-    "song": "네가 원했던 것들",
-    "artist": "DAY6 (Even of Day)",
-    "album": "Right Through Me"
-  },
-  {
-    "text": "힘들때 내 옆에 푹 기대 쉬어도 돼요 그대의 평생 편이 되어 이해해주고 싶어요",
-    "song": "노력해볼게요",
-    "artist": "DAY6",
-    "album": "MOONRISE"
-  },
-  {
-    "text": "너의 모습 그대로 안아줄게요 받아줄게요 나 노력해볼게요",
-    "song": "노력해볼게요",
-    "artist": "DAY6",
-    "album": "MOONRISE"
-  },
-  {
-    "text": "걱정하는 눈빛으로 바라봐 주는 너 고생했어 오늘도 한마디에",
-    "song": "녹아내려요",
-    "artist": "DAY6",
-    "album": "Band Aid"
-  },
-  {
-    "text": "너의 그 미소가 다시 버텨 낼 수 있게 해 줘요",
-    "song": "녹아내려요",
-    "artist": "DAY6",
-    "album": "Band Aid"
-  },
-  {
-    "text": "걱정 마 괜찮아 옆에 내가 있잖아 너의 그 말이 날 다시 일어서게 해",
-    "song": "녹아내려요",
-    "artist": "DAY6",
-    "album": "Band Aid"
-  },
-  {
-    "text": "나에게 넌 행운이야 놀라움 뿐이야 이젠 내 차례 Love you hold you give you all I got",
-    "song": "녹아내려요",
-    "artist": "DAY6",
-    "album": "Band Aid"
-  },
-  {
-    "text": "Is anyone here 다가와 내게 소리 없이 잡아줘 아무 이유 없이",
-    "song": "누군가 필요해",
-    "artist": "DAY6",
-    "album": "Every DAY6 October"
-  },
-  {
-    "text": "Why am I alone 홀로 남겨진 지금 누군가 필요해",
-    "song": "누군가 필요해",
-    "artist": "DAY6",
-    "album": "Every DAY6 October"
-  },
-  {
-    "text": "내 사랑이 닿을 수 있도록 세상 로맨틱한 가사로 전해 줘요 Please help me tonight",
-    "song": "도와줘요 Rock&Roll",
-    "artist": "DAY6",
-    "album": "Band Aid"
-  },
-  {
-    "text": "고민은 아무짝에 쓸모없어요 이번엔 그냥 넘어갈 수 없어요",
-    "song": "도와줘요 Rock&Roll",
-    "artist": "DAY6",
-    "album": "Band Aid"
-  },
-  {
-    "text": "So 내일부터는 더 힘을 내 봐야지 늘 그랬듯",
-    "song": "동화 속 아이처럼",
-    "artist": "성진",
-    "album": "30"
-  },
-  {
-    "text": "가끔 다가오는 따뜻함에 이유는 모르지만 울컥했어",
-    "song": "동화 속 아이처럼",
-    "artist": "성진",
-    "album": "30"
-  },
-  {
-    "text": "아끼지 않고 나눌 수만 있다면 세상이 더 아름다워질 텐데",
-    "song": "동화 속 아이처럼",
-    "artist": "성진",
-    "album": "30"
-  },
-  {
-    "text": "그렇게 나는 자연스럽게 사랑을 배웠어",
-    "song": "동화 속 아이처럼",
-    "artist": "성진",
-    "album": "30"
-  },
-  {
-    "text": "난 그저 동화 속 아이처럼 Make a wish everyone would be covered in love",
-    "song": "동화 속 아이처럼",
-    "artist": "성진",
-    "album": "30"
-  },
-  {
-    "text": "You are my only love 내 사랑은 둘도 아닌 하나밖에 없어",
-    "song": "둘도 아닌 하나",
-    "artist": "DAY6",
-    "album": "The Book of Us : Negentropy"
-  },
-  {
-    "text": "내 앞에 있는 사람이 온 세상을 통틀어 제일로 아름다운 존재인 걸 너도 내심 알고 있잖아",
-    "song": "둘도 아닌 하나",
-    "artist": "DAY6",
-    "album": "The Book of Us : Negentropy"
-  },
-  {
-    "text": "걱정하지 마 이건 네 거야 하나밖에 없는 사람이야",
-    "song": "둘도 아닌 하나",
-    "artist": "DAY6",
-    "album": "The Book of Us : Negentropy"
-  },
-  {
-    "text": "드디어 끝나갑니다 크레딧이 올라갑니다 주인공은 행복합니다 지금부터 울 일은 없습니다",
-    "song": "드디어 끝나갑니다",
-    "artist": "DAY6",
-    "album": "The DECADE"
-  },
-  {
-    "text": "고생은 없을 겁니다 걱정도 날라갑니다 기나긴 여정은 이제 마치게 됩니다",
-    "song": "드디어 끝나갑니다",
-    "artist": "DAY6",
-    "album": "The DECADE"
-  },
-  {
-    "text": "이 악물고 버텨 왔어 살아 왔어 오늘만을 위해서",
-    "song": "드디어 끝나갑니다",
-    "artist": "DAY6",
-    "album": "The DECADE"
-  },
-  {
-    "text": "이제서야 웃는다 안도의 한숨을 쉬고 눈물을 훔친다",
-    "song": "드디어 끝나갑니다",
-    "artist": "DAY6",
-    "album": "The DECADE"
-  },
-  {
-    "text": "이제 넌 너 대로 걘 걔 하던 대로 원래 살던 대로 만나기 전 그 때로 다시 돌아가버려",
-    "song": "때려쳐",
-    "artist": "DAY6",
-    "album": "The Book of Us : The Demon"
-  },
-  {
-    "text": "사랑한다 라고 말해 준 사람 말하지 않아도 보여 준 사람",
-    "song": "땡스 투",
-    "artist": "DAY6 (Even of Day)",
-    "album": "The Book of Us : Gluon"
-  },
-  {
-    "text": "상처투성이였던 내게 행복을 안겨 주었죠 전부 덕분이에요 이제 내게 안겨요",
-    "song": "땡스 투",
-    "artist": "DAY6 (Even of Day)",
-    "album": "The Book of Us : Gluon"
-  },
-  {
-    "text": "채울 수 없을 것만 같던 내 마음을 그대는 가득히 날 완성해 줬죠",
-    "song": "땡스 투",
-    "artist": "DAY6 (Even of Day)",
-    "album": "The Book of Us : Gluon"
-  },
-  {
-    "text": "처음부터 지금이 오기까지 변하지 않는 따스함을 줬죠",
-    "song": "땡스 투",
-    "artist": "DAY6 (Even of Day)",
-    "album": "The Book of Us : Gluon"
-  },
-  {
-    "text": "너무나도 사랑했기에 이렇게 아픈가 봐 대단하진 않지만 행복만은 줄 수 있을 거라 생각했는데",
-    "song": "마치 흘러가는 바람처럼",
-    "artist": "DAY6",
-    "album": "The Book of Us : Entropy"
-  },
-  {
-    "text": "마치 흘러가는 바람처럼 넌 영원히 잡으려 해도 잡히지가 않아",
-    "song": "마치 흘러가는 바람처럼",
-    "artist": "DAY6",
-    "album": "The Book of Us : Entropy"
-  },
-  {
-    "text": "그만둘까 하다가도 버텨 Ending credit 나올 때까지",
-    "song": "망겜 (Shxtty Game)",
-    "artist": "DAY6",
-    "album": "Band Aid"
-  },
-  {
-    "text": "조금만 더 가라고 내게 말해 줘",
-    "song": "망겜 (Shxtty Game)",
-    "artist": "DAY6",
-    "album": "Band Aid"
-  },
-  {
-    "text": "Come on over 죽기 살기로 달려 봐",
-    "song": "망겜 (Shxtty Game)",
-    "artist": "DAY6",
-    "album": "Band Aid"
-  },
-  {
-    "text": "Everyday continue 그러다 지칠 때면 잠시 내려놓고 STOP",
-    "song": "망겜 (Shxtty Game)",
-    "artist": "DAY6",
-    "album": "Band Aid"
-  },
-  {
-    "text": "지나온 시간들은 차곡차곡 모여 지금의 나를 만들었고",
-    "song": "문득",
-    "artist": "도운",
-    "album": "Out of the Blue"
-  },
-  {
-    "text": "이젠 보여 한걸음 한걸음 내디뎠던 나",
-    "song": "문득",
-    "artist": "도운",
-    "album": "Out of the Blue"
-  },
-  {
-    "text": "조금 느려도 괜찮아 It's gonna be alright",
-    "song": "문득",
-    "artist": "도운",
-    "album": "Out of the Blue"
-  },
-  {
-    "text": "숨 가쁘도록 걸어온 길 위 가득히 채운 발자국만큼",
-    "song": "문득",
-    "artist": "도운",
-    "album": "Out of the Blue"
-  },
-  {
-    "text": "어디서 떠오를지 어디에 도착할지 아무도 모르겠지",
-    "song": "문득",
-    "artist": "도운",
-    "album": "Out of the Blue"
-  },
-  {
-    "text": "지금 보면 아무것도 아닌데 왜 그리도 아등바등 벗어나려고 했을까",
-    "song": "문득",
-    "artist": "도운",
-    "album": "Out of the Blue"
-  },
-  {
-    "text": "팔짱은 언제든 낄 수 있게 손은 주머니 안에 넌 왜 날 이렇게 만들고 놔둬",
-    "song": "버릇이 됐어",
-    "artist": "DAY6",
-    "album": "The Day"
-  },
-  {
-    "text": "매일이 똑같애 난 쳇바퀴 위를 달리는 기분 제발 좀 바뀌기를 원해도 원하는 대로 안되는게 사람 마음이라 막 가슴이 아려와",
-    "song": "버릇이 됐어",
-    "artist": "DAY6",
-    "album": "The Day"
-  },
-  {
-    "text": "",
-    "song": "버릇이 됐어",
-    "artist": "DAY6",
-    "album": "The Day"
-  },
-  {
-    "text": "눈앞이 눈물로 흐릴 때 혼자서 다독여왔던 지난날 한참을 지나 서서히 밝아져 눈이 부시게 내 세상을 감싼다",
-    "song": "별들 앞에서 Before the Stars",
-    "artist": "DAY6",
-    "album": "The DECADE"
-  },
-  {
-    "text": "오랫동안 꿈꾼 이 순간 영원을 바란다 수많은 별들과 함께",
-    "song": "별들 앞에서 Before the Stars",
-    "artist": "DAY6",
-    "album": "The DECADE"
-  },
-  {
-    "text": "지금 여긴 별빛들이 쏟아져 내리고 감격에 한껏 젖은 채 난 노래를 부른다",
-    "song": "별들 앞에서 Before the Stars",
-    "artist": "DAY6",
-    "album": "The DECADE"
-  },
-  {
-    "text": "거짓된 기쁨일 뿐 유혹을 이겨내 주길 그 미래는 빛날 테니",
-    "song": "비극의 결말에서",
-    "artist": "DAY6 (Even of Day)",
-    "album": "Right Through Me"
-  },
-  {
-    "text": "너로 인해 알게 됐어 온전히 사랑한다는 걸 계속 널 향해 갈 테니까 나를 힘껏 안아줘",
-    "song": "사랑, 이게 맞나 봐",
-    "artist": "DAY6 (Even of Day)",
-    "album": "비밀:리에 vol.1 \"사랑, 이게 맞나 봐\""
-  },
-  {
-    "text": "사랑 이게 맞나 봐 이보다 좋은 건 있을 수 없을 것만 같아",
-    "song": "사랑, 이게 맞나 봐",
-    "artist": "DAY6 (Even of Day)",
-    "album": "비밀:리에 vol.1 \"사랑, 이게 맞나 봐\""
-  },
-  {
-    "text": "사랑 이게 맞나 봐 벅차는 이 느낌을 놓치기 싫어",
-    "song": "사랑, 이게 맞나 봐",
-    "artist": "DAY6 (Even of Day)",
-    "album": "비밀:리에 vol.1 \"사랑, 이게 맞나 봐\""
-  },
-  {
-    "text": "너를 알아갈수록 더 알면 알수록 더 더욱더 좋아지는 너",
-    "song": "사랑, 이게 맞나 봐",
-    "artist": "DAY6 (Even of Day)",
-    "album": "비밀:리에 vol.1 \"사랑, 이게 맞나 봐\""
-  },
-  {
-    "text": "고갤 떨군 채 힘들어할 땐 말없이 너를 안게 돼",
-    "song": "사랑, 이게 맞나 봐",
-    "artist": "DAY6 (Even of Day)",
-    "album": "비밀:리에 vol.1 \"사랑, 이게 맞나 봐\""
-  },
-  {
-    "text": "Let me give you all my love 너를 사랑하게 해주라 내가 갖고 있는 전불 다 줄게",
-    "song": "사랑하게 해주라",
-    "artist": "DAY6",
-    "album": "Fourever"
-  },
-  {
-    "text": "네가 여태 알던 사랑이 아닌 마냥 따스한 그런 걸 줄 수 있어 난",
-    "song": "사랑하게 해주라",
-    "artist": "DAY6",
-    "album": "Fourever"
-  },
-  {
-    "text": "지금의 너를 위해 키워왔어 나의 마음을 너에게 쏟기 위해",
-    "song": "사랑하게 해주라",
-    "artist": "DAY6",
-    "album": "Fourever"
-  },
-  {
-    "text": "네가 옆에 있던 사랑이 아닌 마냥 따스한 그런 걸 줄 수 있어",
-    "song": "사랑하게 해주라",
-    "artist": "DAY6",
-    "album": "The Book of Us : Negentropy"
-  },
-  {
-    "text": "가만히 네 곁을 지킨 난 항상 여기 있을 거란 걸 알아줘",
-    "song": "사랑하게 해주라",
-    "artist": "DAY6",
-    "album": "The Book of Us : Negentropy"
-  },
-  {
-    "text": "차라리 더 당겨줘 너의 곁에 있게 해줘",
-    "song": "아 왜",
-    "artist": "DAY6",
-    "album": "Every DAY6 January"
-  },
-  {
-    "text": "보이지 않는 벽안에 가둬놓지 마 No 날 갖지 않을 거면 풀어줘",
-    "song": "아 왜",
-    "artist": "DAY6",
-    "album": "Every DAY6 January"
-  },
-  {
-    "text": "아무것도 아닌 일에 또 예민해져 있어 먼지 같은 고민들을 점점 쌓아 놓은 채",
-    "song": "아무것도 안 하고 싶다",
-    "artist": "성진",
-    "album": "30"
-  },
-  {
-    "text": "바뀌지 않을 것들로 머리를 굴려 봤자 하나도 달라지는 게 없어 이미 겪어 봤잖아",
-    "song": "아무것도 안 하고 싶다",
-    "artist": "성진",
-    "album": "30"
-  },
-  {
-    "text": "내일은 훌쩍 또 다가올 거란 걸 나도 알아 So 내일부터는 더 힘을 내 봐야지 늘 그랬듯",
-    "song": "아무것도 안 하고 싶다",
-    "artist": "성진",
-    "album": "30"
-  },
-  {
-    "text": "잘해보려고 해 봐도 안되는 걸 너를 만족시키기에 부족해서 미안해",
-    "song": "아야야",
-    "artist": "DAY6",
-    "album": "The Book of Us : Entropy"
-  },
-  {
-    "text": "미안해서 미안해",
-    "song": "아야야",
-    "artist": "DAY6",
-    "album": "The Book of Us : Entropy"
-  },
-  {
-    "text": "널 사랑해 변함없이 난 여전해 너와 달리 잘할 수 있어 난 더 할 수 있어 난",
-    "song": "아직 거기 살아",
-    "artist": "DAY6",
-    "album": "Band Aid"
-  },
-  {
-    "text": "만약에 내가 너라면 아무 말없이 날 안아줄 거야",
-    "song": "아픈 길",
-    "artist": "DAY6",
-    "album": "Remember Us : Youth Part 2"
-  },
-  {
-    "text": "너나 나나 알기는 알았잖아 쉽지만은 않은 길이란 걸 말야",
-    "song": "아픈 길",
-    "artist": "DAY6",
-    "album": "Remember Us : Youth Part 2"
-  },
-  {
-    "text": "가끔씩 보이는 꽃이 얼마나 소중한지 몰라 너무 예쁘고 좋아서 여기 남아있는 거겠지",
-    "song": "아픈 길",
-    "artist": "DAY6",
-    "album": "Remember Us : Youth Part 2"
-  },
-  {
-    "text": "이 아픔을 견뎌낸다면 내 곁에 있을 때보다 너의 내일은 훨씬 나을 거야",
-    "song": "안녕, 잘 가",
-    "artist": "원필",
-    "album": "Pilmography"
-  },
-  {
-    "text": "못 가진 행복을 되찾길 바라며",
-    "song": "안녕, 잘 가",
-    "artist": "원필",
-    "album": "Pilmography"
-  },
-  {
-    "text": "안녕 잘 가 이젠 잘 살아",
-    "song": "안녕, 잘 가",
-    "artist": "원필",
-    "album": "Pilmography"
-  },
-  {
-    "text": "어디에도 없는 널 어디서든 난 느껴",
-    "song": "어디에도 없는 널",
-    "artist": "성진",
-    "album": "30"
-  },
-  {
-    "text": "잠들기 싫은 밤이야 이대로 아침이 와 어차피 내일도 똑같을 텐데",
-    "song": "어디에도 없는 널",
-    "artist": "성진",
-    "album": "30"
-  },
-  {
-    "text": "어찌하다 보면 결국엔 상처가 아물어 버릴지 몰라 전혀 몰라 다 괜찮아질 거야",
-    "song": "어쩌다 보니",
-    "artist": "DAY6",
-    "album": "Shoot Me : Youth Part 1"
-  },
-  {
-    "text": "이렇게 살다 보면 지워지겠지 어찌하다 보면 다",
-    "song": "어쩌다 보니",
-    "artist": "DAY6",
-    "album": "Shoot Me : Youth Part 1"
-  },
-  {
-    "text": "행복해질 거야 힘든 길이라 해도 지나갈 거야",
-    "song": "언젠가 봄은 찾아올 거야",
-    "artist": "원필",
-    "album": "Pilmography"
-  },
-  {
-    "text": "아팠던 상처들 다 잊어버리고 모두 지워 버리고 언젠가 봄은 찾아올 거야",
-    "song": "언젠가 봄은 찾아올 거야",
-    "artist": "원필",
-    "album": "Pilmography"
-  },
-  {
-    "text": "매일 같이 반복되는 하루 끝에 오늘보다 더 나은 내일이 오길",
-    "song": "언젠가 봄은 찾아올 거야",
-    "artist": "원필",
-    "album": "Pilmography"
-  },
-  {
-    "text": "애써 웃음을 지으며 조금이라도 나아지길 그렇게 또 그렇게 난 살아가",
-    "song": "언젠가 봄은 찾아올 거야",
-    "artist": "원필",
-    "album": "Pilmography"
-  },
-  {
-    "text": "지나간 일 중 하나 그건 변치 않아 누구나 알잖아",
-    "song": "역대급 (WALK)",
-    "artist": "DAY6 (Even of Day)",
-    "album": "Right Through Me"
-  },
-  {
-    "text": "계속 걷는 게 운명인 거라면 원하는 대로 가고 싶은 대로 가",
-    "song": "역대급 (WALK)",
-    "artist": "DAY6 (Even of Day)",
-    "album": "Right Through Me"
-  },
-  {
-    "text": "아무리 준비해도 상상도 못 한 게 다가올 테니까 신경 쓰지 마",
-    "song": "역대급 (WALK)",
-    "artist": "DAY6 (Even of Day)",
-    "album": "Right Through Me"
-  },
-  {
-    "text": "어차피 매번 역대급일 거니까 정신 차려 인마",
-    "song": "역대급 (WALK)",
-    "artist": "DAY6 (Even of Day)",
-    "album": "Right Through Me"
-  },
-  {
-    "text": "예뻤어 날 바라봐 주던 그 눈빛",
-    "song": "예뻤어",
-    "artist": "DAY6",
-    "album": "Every DAY6 February"
-  },
-  {
-    "text": "날 불러주던 그 목소리 다 그 모든 게 내겐 예뻤어",
-    "song": "예뻤어",
-    "artist": "DAY6",
-    "album": "Every DAY6 February"
-  },
-  {
-    "text": "더 바랄게 없는듯한 느낌 오직 너만이 주던 순간들",
-    "song": "예뻤어",
-    "artist": "DAY6",
-    "album": "Every DAY6 February"
-  },
-  {
-    "text": "너무 힘이 든다 싶을 땐 가끔 옆에도 좀 봐 내 어깨를 빌려 줄게",
-    "song": "오늘은 내게",
-    "artist": "DAY6",
-    "album": "SUNRISE"
-  },
-  {
-    "text": "오늘은 기대 내게 그냥 잊어버려 그렇게 울지만 말고",
-    "song": "오늘은 내게",
-    "artist": "DAY6",
-    "album": "SUNRISE"
-  },
-  {
-    "text": "넌 좋은 사람 만날 수 있어 다음이 누가 될지 아직 모르지만",
-    "song": "오늘은 내게",
-    "artist": "DAY6",
-    "album": "SUNRISE"
-  },
-  {
-    "text": "날 알잖아 넌 불안한 내 마음을 붙잡아 줘 I want your love 사랑해 줘 그게 내가 바라는 전부인 걸",
-    "song": "우리 앞으로 더 사랑하자",
-    "artist": "DAY6",
-    "album": "The Book of Us : Negentropy"
-  },
-  {
-    "text": "그러니까 우리 앞으로 더 사랑하자",
-    "song": "우리 앞으로 더 사랑하자",
-    "artist": "DAY6",
-    "album": "The Book of Us : Negentropy"
-  },
-  {
-    "text": "좋은 것만 기억해 나쁜 건 잊기로 해",
-    "song": "우리 앞으로 더 사랑하자",
-    "artist": "DAY6",
-    "album": "The Book of Us : Negentropy"
-  },
-  {
-    "text": "사랑에 빠졌고 봄은 찾아왔지 얼었던 내 맘에 싹을 틔워냈지",
-    "song": "우리의 계절",
-    "artist": "DAY6",
-    "album": "The DECADE"
-  },
-  {
-    "text": "때론 무더웠고 거센 비도 맞았지 그때 네가 있어서 추억이 됐지",
-    "song": "우리의 계절",
-    "artist": "DAY6",
-    "album": "The DECADE"
-  },
-  {
-    "text": "몇 년이 지나도 수백 번 반복해도 우리의 계절은 영원히 흐를 거야",
-    "song": "우리의 계절",
-    "artist": "DAY6",
-    "album": "The DECADE"
-  },
-  {
-    "text": "불안한 마음은 언제나 가슴 한켠에 있잖아 내일이 어떤 모양일지 우리는 모르니까",
-    "song": "우린",
-    "artist": "DAY6 (Even of Day)",
-    "album": "Right Through Me"
-  },
-  {
-    "text": "희망이 떠오르면 절망은 저무니까 기쁨만 기억하고 살자",
-    "song": "우린",
-    "artist": "DAY6 (Even of Day)",
-    "album": "Right Through Me"
-  },
-  {
-    "text": "절대로 잊지 마 밤이 널 삼키려 해도 새벽은 찾아와",
-    "song": "우린",
-    "artist": "DAY6 (Even of Day)",
-    "album": "Right Through Me"
-  },
-  {
-    "text": "눈앞이 다 깜깜해도 어둠이 짙어 보여도 틀림없는 사실은 다시 빛은 돌아와",
-    "song": "우린",
-    "artist": "DAY6 (Even of Day)",
-    "album": "Right Through Me"
-  },
-  {
-    "text": "깊은 잠에 빠진 채로 아침을 기분 좋게 맞이하길",
-    "song": "잘 자라 내 사람아",
-    "artist": "Young K",
-    "album": "Eternal"
-  },
-  {
-    "text": "고민들도 걱정거리도 잠시 멈춰 보아요",
-    "song": "잘 자라 내 사람아",
-    "artist": "Young K",
-    "album": "Eternal"
-  },
-  {
-    "text": "비우는 건 사실 쉽지 않죠 나도 알아요 괜찮아요 잠에 들 때까지만이라도 편안하기를 바라요",
-    "song": "잘 자라 내 사람아",
-    "artist": "Young K",
-    "album": "Eternal"
-  },
-  {
-    "text": "숨을 깊게 내쉬며 몸에 힘은 전부 풀어요",
-    "song": "잘 자라 내 사람아",
-    "artist": "Young K",
-    "album": "Eternal"
-  },
-  {
-    "text": "Why don't you feel it 이미 얼굴에 티 날대로 나고 있는데 너 계속 애매하게 웃으며 넘길 거야? 그렇게 그렇게 너 맨날 이럴 거야?",
-    "song": "장난 아닌데",
-    "artist": "DAY6",
-    "album": "Every DAY6 April"
-  },
-  {
-    "text": "넌 왜 그걸 몰라 (You know) 난 너만 보고 있는 걸",
-    "song": "장난 아닌데",
-    "artist": "DAY6",
-    "album": "Every DAY6 April"
-  },
-  {
-    "text": "장난 아닌데 지금 내 눈에 좋아한다 써져 있는데",
-    "song": "장난 아닌데",
-    "artist": "DAY6",
-    "album": "Every DAY6 April"
-  },
-  {
-    "text": "장난 아닌데 지금 내 눈에 좋아한다 써져 있는데",
-    "song": "장난 아닌데",
-    "artist": "DAY6",
-    "album": "Every DAY6 April"
-  },
-  {
-    "text": "너 계속 애매하게 애매하게 웃으며 넘길 거야 그렇게 또 그렇게 너 맨날 이럴 거야",
-    "song": "장난 아닌데",
-    "artist": "DAY6",
-    "album": "Every DAY6 April"
-  },
-  {
-    "text": "참으려 했지만 더는 안되겠어요 좋아합니다",
-    "song": "좋아합니다",
-    "artist": "DAY6",
-    "album": "MOONRISE"
-  },
-  {
-    "text": "이제야 말할 수 있겠어요 사랑하고 싶어요",
-    "song": "좋아합니다",
-    "artist": "DAY6",
-    "album": "MOONRISE"
-  },
-  {
-    "text": "만약 그대는 아니라면 그저 미안해란 한마디만 해주면 돼요",
-    "song": "좋아합니다",
-    "artist": "DAY6",
-    "album": "MOONRISE"
-  },
-  {
-    "text": "매일 아침 눈을 뜰 때 제일 먼저 떠오르는 게 내 머릿속엔 오직 너 하나 뿐이야",
-    "song": "태양처럼",
-    "artist": "DAY6",
-    "album": "The Day"
-  },
-  {
-    "text": "잔잔한 날도 가끔은 일렁이는 날도 네가 있어 준다면 어떤 날이 와도 어떤 파도도 견딜게",
-    "song": "파도가 끝나는 곳까지",
-    "artist": "DAY6 (Even of Day)",
-    "album": "The Book of Us : Gluon"
-  },
-  {
-    "text": "옆자리를 지켜 줘 너와 가고 싶어 파도가 끝나는 곳까지",
-    "song": "파도가 끝나는 곳까지",
-    "artist": "DAY6 (Even of Day)",
-    "album": "The Book of Us : Gluon"
-  },
-  {
-    "text": "다가오는 저 폭풍우를 견뎌 줘 다 지나가고 나서 펼쳐질 그 풍경은 너무 완벽할 테니까",
-    "song": "파도가 끝나는 곳까지",
-    "artist": "DAY6 (Even of Day)",
-    "album": "The Book of Us : Gluon"
-  },
-  {
-    "text": "비바람이 그칠 때까지 손을 놓지 말고 곁에 남아 줘 고요함 속에 아침이 올 땐 꿈만 같을 거니까",
-    "song": "파도가 끝나는 곳까지",
-    "artist": "DAY6 (Even of Day)",
-    "album": "The Book of Us : Gluon"
-  },
-  {
-    "text": "나의 약하고 멋지지 않은 모습에 너의 기대가 무너질까 포장해 왔지만",
-    "song": "포장",
-    "artist": "DAY6",
-    "album": "The Book of Us : Gravity"
-  },
-  {
-    "text": "혹시나 알아챌까 봐 틈새로 비춰질까 봐 감추고 감춰 왔지만",
-    "song": "포장",
-    "artist": "DAY6",
-    "album": "The Book of Us : Gravity"
-  },
-  {
-    "text": "지금 이 순간이 다시 넘겨볼 수 있는 한 페이지가 될 수 있게",
-    "song": "한 페이지가 될 수 있게",
-    "artist": "DAY6",
-    "album": "The Book of Us : Gravity"
-  },
-  {
-    "text": "아름다운 청춘의 한 장 함께 써내려 가자",
-    "song": "한 페이지가 될 수 있게",
-    "artist": "DAY6",
-    "album": "The Book of Us : Gravity"
-  },
-  {
-    "text": "아무 걱정도 하지는 마 나에게 다 맡겨 봐",
-    "song": "한 페이지가 될 수 있게",
-    "artist": "DAY6",
-    "album": "The Book of Us : Gravity"
-  },
-  {
-    "text": "솔직히 말할게 지금이 오기까지 마냥 순탄하진 않았지 오늘이 오길 나도 목 빠져라 기다렸어",
-    "song": "한 페이지가 될 수 있게",
-    "artist": "DAY6",
-    "album": "The Book of Us : Gravity"
-  },
-  {
-    "text": "솔직히 나보다도 네가 몇 배는 더 힘들었을 거라고 믿어 오늘을 위해 그저 견뎌줘서 고마워",
-    "song": "한 페이지가 될 수 있게",
-    "artist": "DAY6",
-    "album": "The Book of Us : Gravity"
-  },
-  {
-    "text": "소리 질러 감격에 겨워 한 번 더 사랑스러워 지금 넌 그 누구보다 더 Beautiful",
-    "song": "해야 뜨지 말아 줘",
-    "artist": "DAY6",
-    "album": "The DECADE"
-  },
-  {
-    "text": "깜빡거리는 가로등 아래 단둘의 스텝을 맞춰갈래 너 가면 가고 안 가면 나도 그대로 멈춰",
-    "song": "해야 뜨지 말아 줘",
-    "artist": "DAY6",
-    "album": "The DECADE"
-  },
-  {
-    "text": "해야 뜨지 말아 줘 오늘밤 이 순간이 끝나지 않게 도시야 더 빛나 줘 우리가 더 아름다울 수 있게",
-    "song": "해야 뜨지 말아 줘",
-    "artist": "DAY6",
-    "album": "The DECADE"
-  },
-  {
-    "text": "모든 게 아름다웠어 우울한 날들은 없었어",
-    "song": "행복했던 날들이었다",
-    "artist": "DAY6",
-    "album": "Remember Us : Youth Part 2"
-  },
-  {
-    "text": "후회는 남기지 않았어 사랑했으니까 뭐 됐어",
-    "song": "행복했던 날들이었다",
-    "artist": "DAY6",
-    "album": "Remember Us : Youth Part 2"
-  },
-  {
-    "text": "아 행복했던 날들이었다 꿈만 같았었지 이제 더는 없겠지만 지난 날로 남겨야지",
-    "song": "행복했던 날들이었다",
-    "artist": "DAY6",
-    "album": "Remember Us : Youth Part 2"
-  },
-  {
-    "text": "아무쪼록 행운을 빌어 줘 내 앞길에 행복을 빌어 줘",
-    "song": "행운을 빌어 줘",
-    "artist": "원필",
-    "album": "Pilmography"
-  },
-  {
-    "text": "계절이 흘러 되돌아오면 더 나은 내가 되어 있을 테니",
-    "song": "행운을 빌어 줘",
-    "artist": "원필",
-    "album": "Pilmography"
-  },
-  {
-    "text": "나갈까 말까 수도 없이 망설였지만 1도 도움 안 되는 고민 따윈 이젠 그만",
-    "song": "행운을 빌어 줘",
-    "artist": "원필",
-    "album": "Pilmography"
-  },
-  {
-    "text": "출발선 이젠 딛고 나아갈 그때가 온 거야",
-    "song": "행운을 빌어 줘",
-    "artist": "원필",
-    "album": "Pilmography"
-  },
-  {
-    "text": "사계절이 돌고 돌면 웃으며 네 앞에 서 있을게",
-    "song": "행운을 빌어 줘",
-    "artist": "원필",
-    "album": "Pilmography"
-  },
-  {
-    "text": "나로 인해 아픈 너를 네가 없이 아플 나를",
-    "song": "Afraid",
-    "artist": "DAY6",
-    "album": "The Book of Us : The Demon"
-  },
-  {
-    "text": "넌 검은색의 하늘을 밝히는 달을 닮았지만 너의 빛이 나의 어둠에 조금씩 가려지고 있어",
-    "song": "Afraid",
-    "artist": "DAY6",
-    "album": "The Book of Us : The Demon"
-  },
-  {
-    "text": "Let me be your love 守りたい あたたかいこの恋を",
-    "song": "Baby, it's okay",
-    "artist": "DAY6",
-    "album": "Unlock"
-  },
-  {
-    "text": "Let me be your love 受け取って 当然だよ　キミなら",
-    "song": "Baby, it's okay",
-    "artist": "DAY6",
-    "album": "Unlock"
-  },
-  {
-    "text": "너와 같은 하늘 아래에 숨쉬는 매 순간이 난 좋아",
-    "song": "Beautiful Feeling",
-    "artist": "DAY6",
-    "album": "Beautiful Feeling"
-  },
-  {
-    "text": "사랑이란 단어론 충분하지가 않아 이 아름다운 느낌",
-    "song": "Beautiful Feeling",
-    "artist": "DAY6",
-    "album": "Beautiful Feeling"
-  },
-  {
-    "text": "Some people say love 하지만 난 그것보다 더한 뭔가 있는 것 같아",
-    "song": "Beautiful Feeling",
-    "artist": "DAY6",
-    "album": "Beautiful Feeling"
-  },
-  {
-    "text": "나에게 쥐어지는 매일이 Gonna be my Best part",
-    "song": "Best Part",
-    "artist": "DAY6",
-    "album": "The Book of Us : Gravity"
-  },
-  {
-    "text": "한 순간도 나에게 있어서는 의미가 없지 않아",
-    "song": "Best Part",
-    "artist": "DAY6",
-    "album": "The Book of Us : Gravity"
-  },
-  {
-    "text": "미래가 찾아온 날 그때가 더 아름답도록",
-    "song": "Best Part",
-    "artist": "DAY6",
-    "album": "The Book of Us : Gravity"
-  },
-  {
-    "text": "두려움 그건 이제 날 움직이게 하는 이유가 된 걸거야",
-    "song": "Best Part",
-    "artist": "DAY6",
-    "album": "The Book of Us : Gravity"
-  },
-  {
-    "text": "매일을 죽은 듯이 살아있던 나에게 넌 일어나게 해줄 이유가 되어줬어",
-    "song": "Better Better",
-    "artist": "DAY6",
-    "album": "MOONRISE"
-  },
-  {
-    "text": "나에게 넌 한걸음 내딛을 이유가 되어줬어 멀지 않은 앞에서 내게 손을 뻗어 줬어",
-    "song": "Better Better",
-    "artist": "DAY6",
-    "album": "MOONRISE"
-  },
-  {
-    "text": "너의 그 미소만이 날 숨쉬게 해 네가 있어 난 Better better",
-    "song": "Better Better",
-    "artist": "DAY6",
-    "album": "MOONRISE"
-  },
-  {
-    "text": "너의 그 사랑만이 멈춰있던 날 다시 뛰게 해 Higher higher",
-    "song": "Better Better",
-    "artist": "DAY6",
-    "album": "MOONRISE"
-  },
-  {
-    "text": "수없이 반복된 만남과 이별이라도 견딜 수 있어",
-    "song": "Check Pattern",
-    "artist": "성진",
-    "album": "30"
-  },
-  {
-    "text": "우린 어쩌면 서로 엇갈린 수많은 선들 위를 걷는 건 아닐까",
-    "song": "Check Pattern",
-    "artist": "성진",
-    "album": "30"
-  },
-  {
-    "text": "어쩌면 우린 다른 색을 담고 있어서, 서로에게 다가가지 못한 걸지도",
-    "song": "Check Pattern",
-    "artist": "성진",
-    "album": "30"
-  },
-  {
-    "text": "상상을 하곤 해 너와 입을 맞출 때 그게 어떤 느낌일지 궁금해",
-    "song": "Chocolate",
-    "artist": "DAY6",
-    "album": "하지 말라면 더 하고 19 Part.1"
-  },
-  {
-    "text": "Chocolate 보다 달콤할 걸 잘 아니까 나도 몰래 가는 시선이 네 입술에 멈추지 뭐니",
-    "song": "Chocolate",
-    "artist": "DAY6",
-    "album": "하지 말라면 더 하고 19 Part.1"
-  },
-  {
-    "text": "단비 같은 너의 손길에 내 맘이 물들고 있어 곳곳에 보이는 너라는 색은 날 일으켜 이끌어줘",
-    "song": "colors",
-    "artist": "DAY6",
-    "album": "The Day"
-  },
-  {
-    "text": "대체 내가 왜 날 떠난 너한테 행복을 바래야 돼 절대 I don’t give a",
-    "song": "Congratulations",
-    "artist": "DAY6",
-    "album": "The Day"
-  },
-  {
-    "text": "꿈을 갖게 된 순간 어느새 시작돼 버린 First round",
-    "song": "Counter",
-    "artist": "DAY6",
-    "album": "Band Aid"
-  },
-  {
-    "text": "얼마든지 Throw me a round and a round 드루와",
-    "song": "Counter",
-    "artist": "DAY6",
-    "album": "Band Aid"
-  },
-  {
-    "text": "하지만 쉼 없이 날아온 시련이 다리에 힘이 풀리게 해도 안돼 Not yet",
-    "song": "Counter",
-    "artist": "DAY6",
-    "album": "Band Aid"
-  },
-  {
-    "text": "정신을 바짝 차리고서 날린다 내 비장의 카운터",
-    "song": "Counter",
-    "artist": "DAY6",
-    "album": "Band Aid"
-  },
-  {
-    "text": "다시 난 몇 번이고 일어나 한계를 한번 더 넘어서 간다 일발 역전의 카운터",
-    "song": "Counter",
-    "artist": "DAY6",
-    "album": "Band Aid"
-  },
-  {
-    "text": "어금니 꽉 깨물고 마지막 라운드까지 탭은 절대 치지 않아",
-    "song": "Counter",
-    "artist": "DAY6",
-    "album": "Band Aid"
-  },
-  {
-    "text": "작정하고 놀 준비해 갈 때는 오늘 절대로 후회 없게",
-    "song": "Dance Dance",
-    "artist": "DAY6",
-    "album": "Every DAY6 May"
-  },
-  {
-    "text": "오늘이 마지막인 듯이 즐겨 carpe diem 뜀박질 막진 않을 테니 오늘 즐긴 뒤엔 Think 얼마나 좋을지",
-    "song": "Dance Dance",
-    "artist": "DAY6",
-    "album": "Every DAY6 May"
-  },
-  {
-    "text": "집 가는 길 기분이 후련하길 지금 이 기분을 잊지 않길 바라는 맘에 나와 즐겨줬으면 해",
-    "song": "Dance Dance",
-    "artist": "DAY6",
-    "album": "Every DAY6 May"
-  },
-  {
-    "text": "I feel good baby I feel great 망가지면 좀 어때 I feel good baby I feel great 미쳐 보이면 뭐 어때",
-    "song": "Dance Dance",
-    "artist": "DAY6",
-    "album": "Every DAY6 May"
-  },
-  {
-    "text": "We gonna fire 매 순간마다 커져 가 터질 듯한 이 느낌",
-    "song": "Deep in love",
-    "artist": "DAY6",
-    "album": "The Book of Us : Entropy"
-  },
-  {
-    "text": "아마도 끝이 없이 계속될 거야 서로를 향한 발걸음은",
-    "song": "Deep in love",
-    "artist": "DAY6",
-    "album": "The Book of Us : Entropy"
-  },
-  {
-    "text": "차분한 음악부터 시작해 천천히 BPM을 올릴게 그러니까 자 일어나 이 순간 나와 Tonight 즐기자 Feel the vibe 리듬 타",
-    "song": "Disco Day",
-    "artist": "DAY6",
-    "album": "The DECADE"
-  },
-  {
-    "text": "날려 스트레스의 스택 원 투 스텝 밟았을 때의 밝게 웃는 넌 너무나 빛이나",
-    "song": "Disco Day",
-    "artist": "DAY6",
-    "album": "The DECADE"
-  },
-  {
-    "text": "Come on, boogie all through the night 어제도 아닌 미래도 아닌 지금 여기 우리만을 위해",
-    "song": "Disco Day",
-    "artist": "DAY6",
-    "album": "The DECADE"
-  },
-  {
-    "text": "대체 얼마나 더 아파야만 이 청춘이 끝날까",
-    "song": "EASY",
-    "artist": "성진",
-    "album": "30"
-  },
-  {
-    "text": "언젠가는 나도 행복할 수 있게",
-    "song": "EASY",
-    "artist": "성진",
-    "album": "30"
-  },
-  {
-    "text": "I think I'm still not easy 생각을 꺼두는 것도 감정을 숨기는 것도 잠을 푹 자는 것마저도",
-    "song": "EASY",
-    "artist": "성진",
-    "album": "30"
-  },
-  {
-    "text": "이렇게 뛰는데 정상일 리 없지 이렇게 뛰다가 저 세상 가겠지 지금 뛰는 게 난지 나인지 심장인지",
-    "song": "EMERGENCY",
-    "artist": "DAY6",
-    "album": "The Book of Us : Entropy"
-  },
-  {
-    "text": "웬만한 Thrill에도 무덤덤했는데 나 치느님을 봐도 끄떡없었는데 들었다 놨다 놨다 들었다",
-    "song": "EMERGENCY",
-    "artist": "DAY6",
-    "album": "The Book of Us : Entropy"
-  },
-  {
-    "text": "숨기지 않고 그냥 두지 말고 언제나 그렇듯이",
-    "song": "everyday we fight",
-    "artist": "DAY6",
-    "album": "The Book of Us : Negentropy"
-  },
-  {
-    "text": "Let’s fight 아픔은 잠깐이겠지만 우린 더 단단해져",
-    "song": "everyday we fight",
-    "artist": "DAY6",
-    "album": "The Book of Us : Negentropy"
-  },
-  {
-    "text": "있는 힘껏 털어낸 순간 가까워지는 우릴 느껴 꾸밈없는 모습이 좋아",
-    "song": "everyday we fight",
-    "artist": "DAY6",
-    "album": "The Book of Us : Negentropy"
-  },
-  {
-    "text": "君の灯すその笑顔こそが奇跡",
-    "song": "Finale",
-    "artist": "DAY6",
-    "album": "The Best Day2"
-  },
-  {
-    "text": "If you let me I can love you till the end So stay with me Don't go anywhere",
-    "song": "Finale",
-    "artist": "DAY6",
-    "album": "The Best Day2"
-  },
-  {
-    "text": "여태 혼자 잘 해왔다고 말해 줄게 나에게",
-    "song": "For Me",
-    "artist": "DAY6",
-    "album": "The Book of Us : Gravity"
-  },
-  {
-    "text": "오늘부터라도 I will start to love you",
-    "song": "For Me",
-    "artist": "DAY6",
-    "album": "The Book of Us : Gravity"
-  },
-  {
-    "text": "거울 속에 갇힌 채 울상을 짓고 있는 나를 이젠 알아주고 싶어",
-    "song": "For Me",
-    "artist": "DAY6",
-    "album": "The Book of Us : Gravity"
-  },
-  {
-    "text": "아마 난 지금까지 위로 한 마디 너에게 한 적 없었던 것 같아",
-    "song": "For Me",
-    "artist": "DAY6",
-    "album": "The Book of Us : Gravity"
-  },
-  {
-    "text": "I wanna thank you 지쳐 쓰러지지 않고 계속 함께해 줘서 나를 끌어 줘서",
-    "song": "For Me",
-    "artist": "DAY6",
-    "album": "The Book of Us : Gravity"
-  },
-  {
-    "text": "All right 눈치만 보다 하루를 보낸 너 할 일은 제껴 두고 나를 따라와",
-    "song": "Free하게",
-    "artist": "DAY6",
-    "album": "The Day"
-  },
-  {
-    "text": "어디라도 괜찮아 멀지 않아도 좋아 그저 떠나고 있는 이 순간이 좋아",
-    "song": "Free하게",
-    "artist": "DAY6",
-    "album": "The Day"
-  },
-  {
-    "text": "잠시라도 괜찮아 조급할 필요는 없잖아 오늘 밤 다 같이 저 하늘 아래",
-    "song": "Free하게",
-    "artist": "DAY6",
-    "album": "The Day"
-  },
-  {
-    "text": "자유를 느끼러 일단 박차고 일어나서 get together 해 뜨기 전 오늘 밤 음악은 turn up",
-    "song": "Free하게",
-    "artist": "DAY6",
-    "album": "The Day"
-  },
-  {
-    "text": "So free 하게 내일은 걱정 말고 아무 신경 쓰지 말고 So free 하게 우리들뿐이라고 생각해봐",
-    "song": "Free하게",
-    "artist": "DAY6",
-    "album": "The Day"
-  },
-  {
-    "text": "털어 내 All day stress 들어 손은 하늘 높게 흔들어 누가 보든 말든 상관 말어 어차피 놀 거 조금이라도 더 푸는 게 이득이야",
-    "song": "Free하게",
-    "artist": "DAY6",
-    "album": "The Day"
-  },
-  {
-    "text": "그런 날이 있을까요? 마냥 좋은 그런 날이요 내일 걱정 하나 없이 웃게 되는 그런 날이요",
-    "song": "Happy",
-    "artist": "DAY6",
-    "album": "Fourever"
-  },
-  {
-    "text": "평범한 한마디도 네 목소리면 그저 치유가 돼",
-    "song": "Healer",
-    "artist": "DAY6",
-    "album": "The Book of Us : Negentropy"
-  },
-  {
-    "text": "네가 가져오는 효과 눈물을 멈추게 해 줘 지친 내게 다가와 꽉 안아 주면 충분해",
-    "song": "Healer",
-    "artist": "DAY6",
-    "album": "The Book of Us : Negentropy"
-  },
-  {
-    "text": "네가 내게 주는 변화 아픔을 씻겨 내려 줘",
-    "song": "Healer",
-    "artist": "DAY6",
-    "album": "The Book of Us : Negentropy"
-  },
-  {
-    "text": "괜찮아 괜찮아 해 주는 널 보고 있다 보면 마음이 편해져",
-    "song": "Healer",
-    "artist": "DAY6",
-    "album": "The Book of Us : Negentropy"
-  },
-  {
-    "text": "아픈 게 사라져 몸이 가벼워져 적어도 하루 한 번 네가 필요해",
-    "song": "Healer",
-    "artist": "DAY6",
-    "album": "The Book of Us : Negentropy"
-  },
-  {
-    "text": "아무리 지쳐도 다시 일으킬 수 있는 마법 같지",
-    "song": "How to love",
-    "artist": "DAY6",
-    "album": "The Book of Us : Gravity"
-  },
-  {
-    "text": "온 세상이 더 예뻐 보인다고 시간까지 멈춰 버리고 싶다 해",
-    "song": "How to love",
-    "artist": "DAY6",
-    "album": "The Book of Us : Gravity"
-  },
-  {
-    "text": "단 한번이라도 해 봤다면 알지 사랑이란 게 얼마나 좋은지",
-    "song": "How to love",
-    "artist": "DAY6",
-    "album": "The Book of Us : Gravity"
-  },
-  {
-    "text": "もしもいつか僕らが 違う誰かと恋に落ちたのなら",
-    "song": "If ~また逢えたら~",
-    "artist": "DAY6",
-    "album": "Unlock"
-  },
-  {
-    "text": "Get it out 속에 묵혀 둔 말을 꺼내 Time is now 가 보자고 Okay",
-    "song": "INSIDE OUT",
-    "artist": "DAY6",
-    "album": "The DECADE"
-  },
-  {
-    "text": "내 안의 뜨거운 여름의 빛 그것만은 죽지 않기를 바라지",
-    "song": "let it be summer",
-    "artist": "Young K",
-    "album": "Letters with notes"
-  },
-  {
-    "text": "눈물마저 얼어버릴 날이 와도 잊지 않게 녹여 버릴 수 있게 계속 간직할게 오늘의 여름을",
-    "song": "let it be summer",
-    "artist": "Young K",
-    "album": "Letters with notes"
-  },
-  {
-    "text": "숨을 죽이고 너의 대답을 기다릴게 턴을 너에게 넘긴 채로 만약 아니라 하더라도 말해 줘",
-    "song": "Love me or Leave me",
-    "artist": "DAY6",
-    "album": "The Book of Us : The Demon"
-  },
-  {
-    "text": "So 대답해 줘 숨김 없이 솔직하게 어서 대답해 줘",
-    "song": "Love me or Leave me",
-    "artist": "DAY6",
-    "album": "The Book of Us : The Demon"
-  },
-  {
-    "text": "원하는 대로 원하는 만큼 쏟아부어 봐",
-    "song": "LOVE PARADE",
-    "artist": "DAY6 (Even of Day)",
-    "album": "Right Through Me"
-  },
-  {
-    "text": "주저하지 말고 바로 들어와 Want you to sing it with me",
-    "song": "LOVE PARADE",
-    "artist": "DAY6 (Even of Day)",
-    "album": "Right Through Me"
-  },
-  {
-    "text": "여기 붙어 지금부터 한 걸음씩 앞으로 이 끝없는 행진에 함께해",
-    "song": "LOVE PARADE",
-    "artist": "DAY6 (Even of Day)",
-    "album": "Right Through Me"
-  },
-  {
-    "text": "한 번만 더 지금부터 언제든 어디서든 계속되고 있을 Our love parade",
-    "song": "LOVE PARADE",
-    "artist": "DAY6 (Even of Day)",
-    "album": "Right Through Me"
-  },
-  {
-    "text": "Fallin' in love with Christmas 사랑이 넘치니까 따스한 겨울이란 마법에 빠지는 날 Lovin' the Christmas",
-    "song": "Lovin′ the Christmas",
-    "artist": "DAY6",
-    "album": "Lovin′ the Christmas"
-  },
-  {
-    "text": "이유 없이 웃음이 나와 분명히 난 이때가 싫었는데",
-    "song": "Lovin′ the Christmas",
-    "artist": "DAY6",
-    "album": "Lovin′ the Christmas"
-  },
-  {
-    "text": "너와 눈 맞출 때 한편의 영화 속 주인공처럼 beautiful",
-    "song": "Man in a movie",
-    "artist": "DAY6",
-    "album": "Every DAY6 May"
-  },
-  {
-    "text": "너를 가진 내겐 더 바랄 것 없이 완벽하게 느껴져",
-    "song": "Man in a movie",
-    "artist": "DAY6",
-    "album": "Every DAY6 May"
-  },
-  {
-    "text": "Only you 밤이 되어 눈을 감으면 너에게 취한 채 잠들게 해",
-    "song": "Man in a movie",
-    "artist": "DAY6",
-    "album": "Every DAY6 May"
-  },
-  {
-    "text": "흐르는 바람소리마저도 내겐 아름다운 멜로디 같았어 꿈속에서나 만날 것 같던 사람이 내 앞에 나타나줬어",
-    "song": "Man in a movie",
-    "artist": "DAY6",
-    "album": "Every DAY6 May"
-  },
-  {
-    "text": "잠깐 쉬어도 좋아 쉬엄쉬엄도 좋아 무리하지 않아도 돼",
-    "song": "Marathon",
-    "artist": "DAY6",
-    "album": "Remember Us : Youth Part 2"
-  },
-  {
-    "text": "지금 너의 곁엔 내가 있어 함께 걸어가는 내가 있어",
-    "song": "Marathon",
-    "artist": "DAY6",
-    "album": "Remember Us : Youth Part 2"
-  },
-  {
-    "text": "사실은 나도 너랑 다를 거 하나 없어 앞지른 사람이 날 비웃고 있을까 봐 나도 멈추지 못했어",
-    "song": "Marathon",
-    "artist": "DAY6",
-    "album": "Remember Us : Youth Part 2"
-  },
-  {
-    "text": "잠깐 쉬어도 좋아 쉬엄쉬엄도 좋아",
-    "song": "Marathon",
-    "artist": "DAY6",
-    "album": "Remember Us : Youth Part 2"
-  },
-  {
-    "text": "무리하지 않아도 돼",
-    "song": "Marathon",
-    "artist": "DAY6",
-    "album": "Remember Us : Youth Part 2"
-  },
-  {
-    "text": "천천히 가도 It's okay",
-    "song": "Marathon",
-    "artist": "DAY6",
-    "album": "Remember Us : Youth Part 2"
-  },
-  {
-    "text": "많이 힘들잖아 이젠 걸어도 괜찮아",
-    "song": "Marathon",
-    "artist": "DAY6",
-    "album": "Remember Us : Youth Part 2"
-  },
-  {
-    "text": "혼자서 외로이 왔어",
-    "song": "Marathon",
-    "artist": "DAY6",
-    "album": "Remember Us : Youth Part 2"
-  },
-  {
-    "text": "시간아 흘러가 이런 날 좀 봐 눈물만 차올라 고갤 들잖아 흐릿해진 내 세상에 걸어갈 길은 어딘지",
-    "song": "Maybe Tomorrow",
-    "artist": "DAY6",
-    "album": "Maybe Tomorrow"
-  },
-  {
-    "text": "내일이 오면 오늘보단 나아지겠지 쓰라리는 이 상처가 좀 덜 아프겠지",
-    "song": "Maybe Tomorrow",
-    "artist": "DAY6",
-    "album": "Maybe Tomorrow"
-  },
-  {
-    "text": "내일이 되면 오늘보단 따뜻하겠지 살을 에는 이 추위가 좀 잦아들겠지",
-    "song": "Maybe Tomorrow",
-    "artist": "DAY6",
-    "album": "Maybe Tomorrow"
-  },
-  {
-    "text": "일해라 열심히 절해라 공손히 떠들어 봐라 내가 하나",
-    "song": "My Way",
-    "artist": "DAY6",
-    "album": "The DECADE"
-  },
-  {
-    "text": "정해진 대로 가라 하는데 시키는 대로 못 하겠네 나름대로 잘해 마음대로 살게 네 죄송한데 너보단 내가 날 잘 알죠",
-    "song": "My Way",
-    "artist": "DAY6",
-    "album": "The DECADE"
-  },
-  {
-    "text": "당연히 사랑해 숨 쉬듯이 또 밥 먹듯이 생각할 필요 없이",
-    "song": "natural",
-    "artist": "Young K",
-    "album": "Letters with notes"
-  },
-  {
-    "text": "I'll just make you believe Until you believe Continue to repeat",
-    "song": "natural",
-    "artist": "Young K",
-    "album": "Letters with notes"
-  },
-  {
-    "text": "내게 보여주는 너의 표정은 날 앞에 두고 앉아 있는 너는 변치 않아",
-    "song": "Not Fine",
-    "artist": "DAY6",
-    "album": "The Book of Us : Entropy"
-  },
-  {
-    "text": "내 1분 1초 다 모두 가져가 오직 그댈 위한 시간이에요",
-    "song": "Not Mine",
-    "artist": "DAY6",
-    "album": "The Book of Us : Entropy"
-  },
-  {
-    "text": "처음에 우린 같은 곳을 바라봤었죠 같은 마음일 때가 있었죠",
-    "song": "Not Mine",
-    "artist": "DAY6",
-    "album": "The Book of Us : Entropy"
-  },
-  {
-    "text": "Lookin' back 인생은 별다를 거 없이 늘 비슷한 모양인 듯 해 놀이터에서 놀던 그때와",
-    "song": "playground",
-    "artist": "Young K",
-    "album": "Letters with notes"
-  },
-  {
-    "text": "올라갔다 미끄럼틀을 타고 내려오다 다쳐 울다가 털고 일어나 다시 한번 올라가",
-    "song": "playground",
-    "artist": "Young K",
-    "album": "Letters with notes"
-  },
-  {
-    "text": "가끔은 옆 뒤 위 아래 다 봐주는 게 어때 안 그러다 사고 나니까",
-    "song": "playground",
-    "artist": "Young K",
-    "album": "Letters with notes"
-  },
-  {
-    "text": "잡혔다가 따라잡기도 하고 이겼다가 지기도 해 결국 웃잖아 맞잖아",
-    "song": "playground",
-    "artist": "Young K",
-    "album": "Letters with notes"
-  },
-  {
-    "text": "떠다니던 나에게 손을 내밀어 줘 숨막히게 힘들던 날 숨쉬게 해 줘",
-    "song": "Rescue Me",
-    "artist": "DAY6",
-    "album": "The Book of Us : Entropy"
-  },
-  {
-    "text": "말하지 않아도 날 알아 주는 너 상처 뿐이었던 날 고쳐 주는 너",
-    "song": "Rescue Me",
-    "artist": "DAY6",
-    "album": "The Book of Us : Entropy"
-  },
-  {
-    "text": "네가 있는 곳이 Paradise 네가 있어야만 난 살아갈 수 있어",
-    "song": "Rescue Me",
-    "artist": "DAY6",
-    "album": "The Book of Us : Entropy"
-  },
-  {
-    "text": "하나부터 열까지 하나도 빠짐없이 감탄스러워 넌",
-    "song": "Say Wow",
-    "artist": "DAY6",
-    "album": "Every DAY6 April"
-  },
-  {
-    "text": "까만 배경에 너는 은은하게 빛나 안달 나고 있어 나 이 다음은 모르겠어 BABE",
-    "song": "Say Wow",
-    "artist": "DAY6",
-    "album": "Every DAY6 April"
-  },
-  {
-    "text": "다가갈까 하다 말고 너를 안으려다 말고 이렇게 하다 보면 밤이 다 갈 것 같아",
-    "song": "Say Wow",
-    "artist": "DAY6",
-    "album": "Every DAY6 April"
-  },
-  {
-    "text": "입이 다물어지지 않아 그저 놀라워 어떻게 넌 한번의 눈빛만으로 날 붙잡아",
-    "song": "Say Wow",
-    "artist": "DAY6",
-    "album": "Every DAY6 April"
-  },
-  {
-    "text": "난 항상 여기 이 자리에 가만히 너만을 기다릴게 아무리 오랜 세월이 흘러도",
-    "song": "Sing Me",
-    "artist": "DAY6",
-    "album": "DAYDREAM"
-  },
-  {
-    "text": "절대로 날 잊지 말아줘 간직해줘 네가 날 느낄 수 있게",
-    "song": "Sing Me",
-    "artist": "DAY6",
-    "album": "DAYDREAM"
-  },
-  {
-    "text": "수명은 숫자에 불과하지 운명이 날 죽이는 건 불가하지 너가 날 잊는 날 그날까지",
-    "song": "Sing Me",
-    "artist": "DAY6",
-    "album": "DAYDREAM"
-  },
-  {
-    "text": "내 진심을 바쳐 전해줄게 한 송이의 물망초 난 항상 여기 이 자리에",
-    "song": "Sing Me",
-    "artist": "DAY6",
-    "album": "DAYDREAM"
-  },
-  {
-    "text": "내가 살아왔던 세상이 너로 인해 뒤집어져 뒤바뀌어",
-    "song": "Sweet Chaos",
-    "artist": "DAY6",
-    "album": "The Book of Us : Entropy"
-  },
-  {
-    "text": "근데 기다려져 내일이 변해가는 매일이 좋아 미칠 정도야",
-    "song": "Sweet Chaos",
-    "artist": "DAY6",
-    "album": "The Book of Us : Entropy"
-  },
-  {
-    "text": "과거의 내가 쌓아온 계획 망가지는 그 공간을 네가 메우고 있어",
-    "song": "Sweet Chaos",
-    "artist": "DAY6",
-    "album": "The Book of Us : Entropy"
-  },
-  {
-    "text": "그 사랑이 널 힘들게만 한다면 더이상 혼자 아파하기 싫다면 나에게 네 옆을 허락해 준다면 영원히 너를 지킬게",
-    "song": "Take All My Heart",
-    "artist": "DAY6",
-    "album": "The DECADE"
-  },
-  {
-    "text": "잡아 주고 싶어 위로해 주고 싶어 I’ll be there in a minute",
-    "song": "Take All My Heart",
-    "artist": "DAY6",
-    "album": "The DECADE"
-  },
-  {
-    "text": "You need the power of love Power of love 이거면 다 돼요",
-    "song": "The Power of Love",
-    "artist": "DAY6",
-    "album": "Fourever"
-  },
-  {
-    "text": "사랑이라는 이름의 그 힘을 느껴봐요 망설이지 말고 의심하지 말고 Don't you worry try it now",
-    "song": "The Power of Love",
-    "artist": "DAY6",
-    "album": "Fourever"
-  },
-  {
-    "text": "풀이 죽어 있는 어깨를 한 당장이라도 쓰러질 듯한 한껏 지친 표정을 지워내지 못하는 그대를 위해",
-    "song": "The Power of Love",
-    "artist": "DAY6",
-    "album": "Fourever"
-  },
-  {
-    "text": "Name of love 바꿔 줄 거라 믿어요 되찾을 거예요 잃었던 미소를 With the power of love",
-    "song": "The Power of Love",
-    "artist": "DAY6",
-    "album": "Fourever"
-  },
-  {
-    "text": "Isn't it wonderful 없었던 용기를 주는 힘 두려움 제치고 달리게 만들죠",
-    "song": "The Power of Love",
-    "artist": "DAY6",
-    "album": "Fourever"
-  },
-  {
-    "text": "터덜터덜 힘없이 걷다가 넘어질 때마다 아파하다 흘러내리려는 눈물 가득 참고 있는 그대를 위해",
-    "song": "The Power of Love",
-    "artist": "DAY6",
-    "album": "Fourever"
-  },
-  {
-    "text": "Isn't it incredible 막막함을 지워주는 힘 잃어버린 길을 찾고 미래를 더 기대하게 해요",
-    "song": "The Power of Love",
-    "artist": "DAY6",
-    "album": "Fourever"
-  },
-  {
-    "text": "서로에게 사랑을 속삭이며 보낸 날들을 그리워하며 잘 자란 한 마디 없이 잠들어",
-    "song": "Tick Tock",
-    "artist": "DAY6",
-    "album": "The Book of Us : The Demon"
-  },
-  {
-    "text": "Want to love you 나에게 주는 것보다 더 Want to love you 나만큼 네가 행복해질 때까지",
-    "song": "want to love you",
-    "artist": "Young K",
-    "album": "Eternal"
-  },
-  {
-    "text": "행복하니 누가 너에게 물어 온다면 넌 자신 있게 대답을 해 줘 넌 행복하다고",
-    "song": "want to love you",
-    "artist": "Young K",
-    "album": "Eternal"
-  },
-  {
-    "text": "내 안의 전부를 다 내게 없는 것조차 너에게 바치겠어",
-    "song": "want to love you",
-    "artist": "Young K",
-    "album": "Eternal"
-  },
-  {
-    "text": "사랑받는 순간조차 과분하게 느껴 난 너무 부족하기에",
-    "song": "want to love you",
-    "artist": "Young K",
-    "album": "Eternal"
-  },
-  {
-    "text": "이젠 혼자가 아닐 무대 너무나 감격스러워 끝없는 가능성 중에 날 골라줘서 고마워",
-    "song": "Welcome to the Show",
-    "artist": "DAY6",
-    "album": "Fourever"
-  },
-  {
-    "text": "이것만큼은 맹세할게 내 전부를 다 바칠게 네 눈빛 흔들리지 않게 널 바라보며 서 있을게",
-    "song": "Welcome to the Show",
-    "artist": "DAY7",
-    "album": "Fourever"
-  },
-  {
-    "text": "알아 너의 결정이 쉽지 않았을 거야 후회 없게 하는 건 이제 나의 몫이야",
-    "song": "Welcome to the Show",
-    "artist": "DAY8",
-    "album": "Fourever"
-  },
-  {
-    "text": "막이 내릴 그날에도 그때도 네 손 꼭 잡은 채 너라서 행복했다고 서로가 말할 수 있도록",
-    "song": "Welcome to the Show",
-    "artist": "DAY9",
-    "album": "Fourever"
-  },
-  {
-    "text": "놓지 말아 줘 네가 있다는 게 나에게는 마지막 희망 한 줄기의 빛이니까",
-    "song": "You make Me",
-    "artist": "DAY6",
-    "album": "The Book of Us : Negentropy"
-  },
-  {
-    "text": "살아 있다는 게 두렵고 버겁긴 하지만 견딜 수 있어 오로지 너의 그 사랑이 있다면",
-    "song": "You make Me",
-    "artist": "DAY6",
-    "album": "The Book of Us : Negentropy"
-  },
-  {
-    "text": "네가 없었다면 다 불가능할 거야 지금의 난 있지도 않을 거야 너라서 날 일으키는 거야",
-    "song": "You make Me",
-    "artist": "DAY6",
-    "album": "The Book of Us : Negentropy"
-  },
-  {
-    "text": "살아있다는 게 두렵고 버겁기도 하지만 견딜 수 있어 오로지 너의 그 사랑이 있다면",
-    "song": "You make Me",
-    "artist": "DAY6",
-    "album": "The Book of Us : Negentropy"
-  },
-  {
-    "text": "변할 건 없어 또 바랄 건 없어 그대로일 거야",
-    "song": "You make Me",
-    "artist": "DAY6",
-    "album": "The Book of Us : Negentropy"
-  },
-  {
-    "text": "너라서 난 흔들리지 않아 그러니 날 놓지 말아 줘",
-    "song": "You make Me",
-    "artist": "DAY6",
-    "album": "The Book of Us : Negentropy"
-  },
-  {
-    "text": "외롭지 않게 괴롭지 않게 내가 무너져도 늘 믿어 주던 나에게 넌 어떤 의미인지",
-    "song": "You Wake Me Up",
-    "artist": "성진",
-    "album": "30"
-  },
-  {
-    "text": "너 없인 다시 일어설 자신이 없어 내 곁엔 늘 네가 스며들어 있단 생각에 난 또 나아가 You wake me up",
-    "song": "You Wake Me Up",
-    "artist": "성진",
-    "album": "30"
-  },
-  {
-    "text": "너무 갑자기 또 내가 진지했나? 주저리주저리 내 할 말만 했네 결국 고맙다는 말이야",
-    "song": "You Wake Me Up",
-    "artist": "성진",
-    "album": "30"
-  },
-  {
-    "text": "어제는 어떤 날이었나 특별한 게 있었던가 떠올려 보려 하지만 별다를 건 없었던 것 같아",
-    "song": "Zombie",
-    "artist": "DAY6",
-    "album": "The Book of Us : The Demon"
-  },
-  {
-    "text": "오늘도 똑같이 흘러가 나만 이렇게 힘들까 어떻게 견뎌야 할까 마음껏 소리쳐 울면 나아질까",
-    "song": "Zombie",
-    "artist": "DAY6",
-    "album": "The Book of Us : The Demon"
-  },
-  {
-    "text": "머리와 심장이 텅 빈 생각 없는 허수아비",
-    "song": "Zombie",
-    "artist": "DAY6",
-    "album": "The Book of Us : The Demon"
-  }
-
-        ].filter(item => item.text && item.text.trim() !== "");
-
-        let isAnimating = false;
-        let isPlaying = false;
-        let currentVideoId = null;
-
-        const drawBtn = document.getElementById('draw-btn');
-        const playPauseBtn = document.getElementById('play-pause-btn');
-        const loadingState = document.getElementById('loading-state');
-        const resultState = document.getElementById('result-state');
-        const resultGif = document.getElementById('result-gif');
-        const resultText = document.getElementById('result-text');
-        const resultSpeakerLabel = document.getElementById('result-speaker-label');
-        const playerSongText = document.getElementById('player-song');
-        const playerStatus = document.getElementById('player-status');
-        const headerVideoContainer = document.getElementById('header-video-container');
-        const playerIcon = document.getElementById('player-icon-container');
-        const airTag = document.getElementById('air-tag');
-
-        function getYouTubeId(url) {
-            if (!url) return "iQBOu81LkT0";
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-            const match = url.match(regExp);
-            return (match && match[2].length === 11) ? match[2] : "iQBOu81LkT0";
-        }
-
-        function embedVideo(videoId) {
-            headerVideoContainer.innerHTML = '';
-            const iframe = document.createElement('iframe');
-            iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&enablejsapi=1&origin=${window.location.origin}`;
-            iframe.allow = "autoplay; encrypted-media";
-            headerVideoContainer.appendChild(iframe);
-        }
-
-        function updateControls(playing) {
-            const shape = document.getElementById('play-pause-shape');
-            if (!shape) return;
-
-            if (playing) {
-                shape.className = 'pause-mode';
-                playerIcon.classList.add('animate-cd');
-                airTag.innerText = "ON_AIR";
-                airTag.className = "bg-green-500 text-white px-2 py-0.5 text-[8px] font-pixel rounded animate-pulse shadow-sm";
-                playerStatus.innerHTML = '<span class="w-1.5 h-1.5 bg-[#84CC16] rounded-full animate-pulse"></span> 행복 재생 중 (❁´◡`❁)';
-            } else {
-                shape.className = 'play-mode';
-                playerIcon.classList.remove('animate-cd');
-                airTag.innerText = "PAUSED";
-                airTag.className = "bg-red-500 text-white px-2 py-0.5 text-[8px] font-pixel rounded shadow-sm";
-                playerStatus.innerHTML = '음악이 일시정지되었습니다';
-            }
-        }
-
-        function drawFortune() {
-            if (isAnimating) return;
-            isAnimating = true;
-
-            resultState.classList.add('hidden');
-            loadingState.classList.remove('hidden');
-            
-            const randomLyric = lyricsData[Math.floor(Math.random() * lyricsData.length)];
-            const randomGifNum = Math.floor(Math.random() * 40) + 1;
-            const videoId = getYouTubeId(songUrlMap[randomLyric.song]);
-            
-            currentVideoId = videoId;
-            playerSongText.innerText = randomLyric.song;
-
-            setTimeout(() => {
-                embedVideo(videoId);
-                isPlaying = true;
-                updateControls(true);
-                
-                loadingState.classList.add('hidden');
-                resultState.classList.remove('hidden');
-
-                resultText.innerText = `"${randomLyric.text}"`;
-                resultSpeakerLabel.innerText = `${randomLyric.artist} | ${randomLyric.album}`;
-                resultGif.src = `${randomGifNum}.gif`;
-
-                isAnimating = false;
-                lucide.createIcons();
-            }, 1000);
-        }
-
-        function togglePlay() {
-            if (!currentVideoId) {
-                drawFortune();
-                return;
-            }
-            isPlaying = !isPlaying;
-            updateControls(isPlaying);
-            if (isPlaying) embedVideo(currentVideoId);
-            else headerVideoContainer.innerHTML = '<div class="w-full h-full flex items-center justify-center text-white font-pixel text-xs bg-[#111]">PAUSED</div>';
-        }
-
-        drawBtn.addEventListener('click', drawFortune);
-        playPauseBtn.addEventListener('click', togglePlay);
-        
-// 기존 window.addEventListener('click', ...) 부분을 아래로 교체
-const startExperience = () => {
-    if(!currentVideoId && !isAnimating) {
-        drawFortune();
-        // 브라우저에게 "사용자가 상호작용했음"을 알리기 위해 
-        // 비어있는 소리라도 한 번 재생하거나 이벤트를 트리거합니다.
-    }
-};
-
-// 사용자가 화면 아무데나 클릭/터치하면 바로 시작
-window.addEventListener('click', startExperience, { once: true });
-window.addEventListener('touchstart', startExperience, { once: true });
-
-// 초기 실행 시도 (운 좋게 정책을 통과하는 경우 대비)
-document.addEventListener('DOMContentLoaded', () => {
-    drawFortune();
-});
-
+    // 휴대폰 기울기 감지 배경 효과
     window.addEventListener('deviceorientation', function(event) {
         const bg = document.querySelector('.bg-animate');
         if(!bg) return;
         const x = event.gamma || 0; 
         const y = event.beta || 0;
-        const moveX = x * 0.5;
-        const moveY = (y - 45) * 0.5;
+        const moveX = x * 0.4;
+        const moveY = (y - 45) * 0.4;
         bg.style.backgroundPosition = `calc(50% + ${moveX}px) calc(0% + ${50 + moveY}px), center`;
     });
     </script>
 </body>
 </html>
-
-
 
